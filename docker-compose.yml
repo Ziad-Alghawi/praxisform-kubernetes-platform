@@ -10,6 +10,41 @@ services:
       MONGO_INITDB_DATABASE: praxis
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "mongodb://localhost:27017/praxis", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./praxis
+      dockerfile: Dockerfile
+    container_name: praxis-backend
+    ports:
+      - "8080:8080"
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/praxis
+      JWT_SECRET: CHANGE_ME_very_long_secret_at_least_32_chars
+      JWT_EXP_MINUTES: "120"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./praxis-frontend
+      dockerfile: Dockerfile
+    container_name: praxis-frontend
+    ports:
+      - "4200:80"
+    environment:
+      # frontend im browser soll backend über host erreichen:
+      # - wenn du lokal via compose startest, passt localhost:8080
+      # - wenn du später extern deployest, stellst du das auf deine Domain um
+      API_URL: "http://localhost:8080"
+    depends_on:
+      - backend
 
 volumes:
   mongo_data:

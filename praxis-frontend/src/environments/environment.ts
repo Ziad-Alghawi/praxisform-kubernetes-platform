@@ -1,4 +1,8 @@
+declare global {
+  interface Window { __env?: { apiUrl?: string }; }
+}
+
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080'
+  apiUrl: window.__env?.apiUrl ?? 'http://localhost:8080',
 };
