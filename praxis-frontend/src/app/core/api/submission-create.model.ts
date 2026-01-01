@@ -1,0 +1,42 @@
+export type SubmissionStatus = 'NEW' | 'VIEWED' | 'DONE';
+
+export interface SubmissionCreateRequest {
+  formVersion: string;
+  patientData: PatientData;
+  medical: MedicalData;
+  consents: Consents;
+  // signature?: Signature; // später
+  // meta?: SubmissionMeta; // optional, später
+}
+
+export interface PatientData {
+  firstName: string;
+  lastName: string;
+  birthDate: string; // ISO: YYYY-MM-DD
+  phone?: string;
+  email?: string;
+  address?: Address;
+}
+
+export interface Address {
+  street: string;
+  houseNumber: string;
+  zip: string;
+  city: string;
+}
+
+export interface MedicalData {
+  allergies?: string[];
+  medications?: string[];
+  preExistingConditions?: string[];
+}
+
+export interface Consents {
+  gdprAccepted: boolean;
+  dataSharingAccepted: boolean;
+  acceptedAt?: string | null; // ISO
+}
+export interface ZipSuggestion {
+  zip: string;
+  city: string;
+}

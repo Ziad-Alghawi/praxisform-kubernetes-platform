@@ -1,0 +1,10 @@
+app:
+  security:
+    jwt:
+      # 32+ chars (HS256). In PROD als ENV var!
+      secret: "CHANGE_ME_very_long_secret_at_least_32_chars"
+      expiration-minutes: 120
+
+spring:
+  mongodb:
+    uri: mongodb://localhost:27017/praxis

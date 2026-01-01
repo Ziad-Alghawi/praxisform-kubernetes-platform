@@ -1,0 +1,238 @@
+.page {
+  min-height: 100vh;
+  background: #f6f8fc;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.08);
+  margin-left: 20px;
+
+  .title { font-weight: 700; }
+  .spacer { flex: 1; }
+  border-radius: 16px;
+  .status-pill {
+
+    font-weight: 700;
+    letter-spacing: .2px;
+    border-radius: 999px;
+    padding: 0 10px;
+  }
+
+  .status-pill.new { background: #e3f2fd; color: #0d47a1; }
+  .status-pill.viewed { background: #fff8e1; color: #8d6e00; }
+  .status-pill.done { background: #e8f5e9; color: #1b5e20; }
+}
+
+.content {
+  width: min(1100px, 100%);
+  margin: 18px auto 0;
+  padding: 0 16px 26px;
+}
+
+.card {
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(16, 24, 40, 0.08);
+  overflow: hidden;
+}
+
+.section {
+  margin-top: 16px;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .muted {
+    color: rgba(0,0,0,.55);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
+.state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  color: rgba(0,0,0,.65);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 16px;
+}
+
+.item {
+  .k {
+    color: rgba(0,0,0,.55);
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+  .v {
+    font-weight: 600;
+    color: rgba(0,0,0,.85);
+  }
+}
+
+.mono .v {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+}
+
+.muted { color: rgba(0,0,0,.55); }
+
+/* ---- Medical view chips ---- */
+.medical-view {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+
+  .block .k {
+    color: rgba(0,0,0,.55);
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+}
+
+.chipset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border-radius: 999px;
+  font-weight: 600;
+  background: rgba(255,255,255,.9);
+  border: 1px solid rgba(0,0,0,.08);
+
+  .chip-ic {
+    font-size: 18px;
+    margin-right: 6px;
+    opacity: .85;
+  }
+}
+
+/* ---- Edit form layout ---- */
+.edit-form .grid {
+  align-items: start;
+}
+
+.address {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.span-2 { grid-column: span 2; }
+
+/* ---- medical edit ---- */
+.medical-edit {
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.medical-group {
+  display: grid;
+  gap: 10px;
+
+  .k {
+    color: rgba(0,0,0,.55);
+    font-size: 12px;
+  }
+}
+
+.add-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .grow { flex: 1; }
+
+  .add-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      margin: 0;
+      line-height: 1;
+    }
+  }
+}
+
+.consents {
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+/* ---- bottom actions (sticky) ---- */
+.actions-bottom {
+  position: sticky;
+  bottom: 0;
+  margin-top: 16px;
+  padding: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+
+  background: linear-gradient(to top, #f6f8fc 70%, rgba(246,248,252,0));
+}
+
+.done-btn {
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-weight: 800;
+  box-shadow: 0 10px 22px rgba(16,24,40,.12);
+}
+
+.edit-btn {
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-weight: 800;
+  box-shadow: 0 10px 22px rgba(16,24,40,.12);
+}
+
+/* ---- Amber dialog theme ---- */
+:host ::ng-deep .amber-dialog .mdc-dialog__surface {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 193, 7, .35);
+  box-shadow: 0 20px 45px rgba(16,24,40,.20);
+}
+
+:host ::ng-deep .amber-dialog .mdc-dialog__title {
+  color: #7a5a00;
+  font-weight: 900;
+}
+
+:host ::ng-deep .amber-dialog .mdc-button--raised,
+:host ::ng-deep .amber-dialog .mdc-button--unelevated {
+  background: #ffc107 !important;
+  color: #3a2a00 !important;
+}
+
+@media (max-width: 860px) {
+  .grid { grid-template-columns: 1fr; }
+  .span-2 { grid-column: auto; }
+  .address { grid-template-columns: 1fr; }
+  .actions-bottom { flex-direction: column; }
+}
