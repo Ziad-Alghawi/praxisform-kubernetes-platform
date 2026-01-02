@@ -28,7 +28,8 @@
     </div>
 
     <div class="error" *ngIf="error()">{{ error() }}</div>
-
+    <div class="table-wrap"
+         *ngIf="!loading() && !error()">
     <table
       mat-table
       [dataSource]="paged()"
@@ -116,6 +117,7 @@
         <td [attr.colspan]="displayedColumns.length">Keine Einträge.</td>
       </tr>
     </table>
+    </div>
 
     <!-- ✅ Pagination -->
     <mat-paginator
