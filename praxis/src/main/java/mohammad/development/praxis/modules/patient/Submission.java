@@ -8,6 +8,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 @Data
 @NoArgsConstructor
 @Document(collection = "submissions")
@@ -35,5 +37,7 @@ public class Submission {
 
     /** sparsam, möglichst wenig speichern */
     private SubmissionMeta meta;
+
+    private List<SubmissionAttachment> attachments = new ArrayList<>();
 
 }

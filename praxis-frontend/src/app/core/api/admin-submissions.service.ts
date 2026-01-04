@@ -33,6 +33,12 @@ export class AdminSubmissionsService {
     return this.http.patch<void>(`${this.baseUrl}/${id}/status`, { status });
   }
 
+  downloadAttachment(submissionId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${submissionId}/attachments/${attachmentId}`, {
+      responseType: 'blob',
+    });
+  }
+
   // Backend liefert oft _id -> wir machen einheitlich id
   private normalize = (s: ApiSubmission) => {
     const id = s.id ?? s._id;

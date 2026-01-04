@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { AdminSubmissionsService } from '../../core/api/admin-submissions.service';
-import { SubmissionDetails, SubmissionStatus, SymptomDetail } from '../../core/api/submission.model';
+import { SubmissionAttachment, SubmissionDetails, SubmissionStatus, SymptomDetail } from '../../core/api/submission.model';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -395,5 +395,34 @@ export class SubmissionDetailsComponent {
       onset: this.fb.control<string | null>(value?.onset ?? null),
       notes: this.fb.control<string | null>(value?.notes ?? null),
     });
+  }
+
+  openAttachment(att: SubmissionAttachment) {
+    const s = this.submission();
+    if (!s) return;
+    this.api.downloadAttachment(s.id, att.id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      },
+      error: () => {
+        this.snack.open('Datei konnte nicht geladen werden', 'OK', { duration: 3000 });
+      },
+    });
+  }
+
+  attachmentIcon(att: SubmissionAttachment) {
+    if (att.contentType === 'application/pdf') return 'picture_as_pdf';
+    if (att.contentType?.startsWith('image/')) return 'image';
+    return 'attach_file';
+  }
+
+  formatFileSize(bytes?: number) {
+    if (!bytes && bytes !== 0) return '';
+    if (bytes < 1024) return `${bytes} B`;
+    const kb = bytes / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
   }
 }

@@ -21,7 +21,7 @@ import { Router } from '@angular/router';
 
 import { PublicSubmissionsService } from '../../core/api/public-submissions.service';
 import { SubmissionCreateRequest } from '../../core/api/submission-create.model';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEventType } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, startWith } from 'rxjs';
 import {MatDatepicker, MatDatepickerInput, MatDatepickerToggle} from '@angular/material/datepicker';
 import { MatChipOption, MatChipSelectionChange, MatChipsModule } from '@angular/material/chips';
@@ -29,6 +29,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatDivider} from '@angular/material/list';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSliderModule} from '@angular/material/slider';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import {SYMPTOM_CATALOG, SYMPTOM_DURATION_OPTIONS, SymptomConfig} from '../../shared/symptoms/symptom-catalog';
 import { SymptomDetailDialogComponent } from './symptom-detail-dialog.component';
 import { SymptomDetail } from '../../core/api/submission-create.model';
@@ -53,6 +54,7 @@ import { SymptomDetail } from '../../core/api/submission-create.model';
     MatFormFieldModule,
     MatSelectModule,
     MatSliderModule,
+    MatProgressBarModule,
     FormsModule,
     MatDivider,
   ],
@@ -75,6 +77,14 @@ export class PatientFormComponent {
   today = new Date();
   submitting = signal(false);
   cityLocked = signal(false);
+  dragActive = signal(false);
+  uploadState = signal<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  uploadProgress = signal(0);
+
+  attachments: File[] = [];
+  private readonly maxFiles = 5;
+  private readonly maxFileSizeBytes = 10 * 1024 * 1024;
+  private readonly allowedTypes = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/webp']);
 
 // Vorschläge (kannst du später aus Config/Backend laden)
   allergyOptions = ['Pollen', 'Hausstaub', 'Tierhaare', 'Penicillin', 'Nüsse', 'Latex'];
@@ -143,7 +153,7 @@ export class PatientFormComponent {
 
     const v = this.form.getRawValue();
     const birthDate: Date | null = this.form.value.patientData?.birthDate ?? null;
-    console.log(this.toIsoDateOnly(birthDate!))
+    // console.log(this.toIsoDateOnly(birthDate!))
     const payload: SubmissionCreateRequest = {
       formVersion: 'v1',
       patientData: {
@@ -167,17 +177,31 @@ export class PatientFormComponent {
       },
     };
 
-    console.log('CONSENTS', v.consents);
-
+    // console.log('PAYLOAD', payload);
+    // console.log('PAYLOAD', this.attachments);
     this.submitting.set(true);
-    this.api.createSubmission(payload).subscribe({
-      next: () => {
-        this.submitting.set(false);
-        this.resetForm();
-        this.router.navigate(['/form/success']);
+    this.uploadState.set('uploading');
+    this.uploadProgress.set(0);
+    this.api.createSubmission(payload, this.attachments).subscribe({
+      next: (event) => {
+        if (event.type === HttpEventType.UploadProgress) {
+          const total = event.total ?? 0;
+          if (total > 0) {
+            this.uploadProgress.set(Math.round((event.loaded / total) * 100));
+          }
+        }
+        if (event.type === HttpEventType.Response) {
+          this.submitting.set(false);
+          this.uploadProgress.set(100);
+          this.uploadState.set('success');
+          setTimeout(() => this.uploadState.set('idle'), 2500);
+          this.resetForm();
+          this.router.navigate(['/form/success']);
+        }
       },
       error: () => {
         this.submitting.set(false);
+        this.uploadState.set('error');
         this.snack.open('Senden fehlgeschlagen. Bitte erneut versuchen.', 'OK', { duration: 3500 });
       },
     });
@@ -210,6 +234,10 @@ export class PatientFormComponent {
     this.extraMedication.setValue('');
     this.extraCondition.setValue('');
     this.extraSymptom.setValue('');
+    this.attachments = [];
+    this.dragActive.set(false);
+    this.uploadState.set('idle');
+    this.uploadProgress.set(0);
     this.form.markAsPristine();
     this.form.markAsUntouched();
   }
@@ -350,6 +378,82 @@ export class PatientFormComponent {
           this.cityLocked.set(false);
         },
       });
+  }
+
+  onFilesSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    this.addFiles(Array.from(input.files));
+    input.value = '';
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.dragActive.set(false);
+    if (!event.dataTransfer?.files?.length) return;
+    this.addFiles(Array.from(event.dataTransfer.files));
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.dragActive.set(true);
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.dragActive.set(false);
+  }
+
+  removeAttachment(index: number) {
+    this.attachments = this.attachments.filter((_, i) => i !== index);
+  }
+
+  fileIcon(file: File) {
+    if (file.type === 'application/pdf') return 'picture_as_pdf';
+    if (file.type.startsWith('image/')) return 'image';
+    return 'attach_file';
+  }
+
+  formatFileSize(bytes: number) {
+    if (!bytes && bytes !== 0) return '';
+    if (bytes < 1024) return `${bytes} B`;
+    const kb = bytes / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
+  }
+
+  private addFiles(files: File[]) {
+    const errors: string[] = [];
+
+    for (const file of files) {
+      if (this.attachments.length >= this.maxFiles) {
+        errors.push(`Maximal ${this.maxFiles} Dateien erlaubt.`);
+        break;
+      }
+
+      if (!this.allowedTypes.has(file.type)) {
+        errors.push(`${file.name}: Ungültiger Dateityp.`);
+        continue;
+      }
+
+      if (file.size > this.maxFileSizeBytes) {
+        errors.push(`${file.name}: Datei zu groß (max. 10 MB).`);
+        continue;
+      }
+
+      const exists = this.attachments.some(existing =>
+        existing.name === file.name && existing.size === file.size && existing.type === file.type
+      );
+      if (exists) {
+        continue;
+      }
+
+      this.attachments = [...this.attachments, file];
+    }
+
+    if (errors.length) {
+      this.snack.open(errors[0], 'OK', { duration: 3000 });
+    }
   }
   toggleFromOptions(ctrl: FormControl<string[]>, value: string, checked: boolean) {
     const set = new Set(ctrl.value); // ctrl.value ist string[]

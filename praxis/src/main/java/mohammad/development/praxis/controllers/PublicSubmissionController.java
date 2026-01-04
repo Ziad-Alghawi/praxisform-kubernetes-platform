@@ -4,9 +4,22 @@ import mohammad.development.praxis.DTOs.SubmissionCreateRequest;
 import mohammad.development.praxis.modules.admin.SseHub;
 import mohammad.development.praxis.modules.patient.Submission;
 import mohammad.development.praxis.modules.patient.SubmissionStatus;
+import mohammad.development.praxis.modules.patient.SubmissionAttachment;
 import mohammad.development.praxis.repos.SubmissionRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.bson.types.ObjectId;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/submissions")
@@ -14,15 +27,85 @@ public class PublicSubmissionController {
     private SseHub hub;
 
     private final SubmissionRepository submissionRepository;
+    private final GridFsTemplate gridFsTemplate;
 
-    public PublicSubmissionController(SseHub hub, SubmissionRepository submissionRepository) {
+    private static final long MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+    private static final int MAX_FILES = 5;
+    private static final Set<String> ALLOWED_TYPES = Set.of(
+            "application/pdf",
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+    );
+
+    public PublicSubmissionController(
+            SseHub hub,
+            SubmissionRepository submissionRepository,
+            GridFsTemplate gridFsTemplate
+    ) {
         this.hub = hub;
         this.submissionRepository = submissionRepository;
+        this.gridFsTemplate = gridFsTemplate;
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public Submission submit(@RequestBody SubmissionCreateRequest req) {
+        Submission sAfterSave = submissionRepository.save(buildSubmission(req));
+        hub.sendCreated(sAfterSave);
+        return sAfterSave;
+
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public Submission submitWithFiles(
+            @RequestPart("payload") SubmissionCreateRequest req,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
+    ) {
+        validateFiles(files);
+
+        Submission sAfterSave = submissionRepository.save(buildSubmission(req));
+        if (files == null || files.isEmpty()) {
+            hub.sendCreated(sAfterSave);
+            return sAfterSave;
+        }
+
+        List<SubmissionAttachment> attachments = new ArrayList<>();
+        try {
+            for (MultipartFile file : files) {
+                if (file == null || file.isEmpty()) {
+                    continue;
+                }
+
+                ObjectId storedId = gridFsTemplate.store(
+                        file.getInputStream(),
+                        file.getOriginalFilename(),
+                        file.getContentType(),
+                        new org.bson.Document("submissionId", sAfterSave.getId())
+                );
+
+                SubmissionAttachment attachment = new SubmissionAttachment();
+                attachment.setId(storedId.toHexString());
+                attachment.setFileName(file.getOriginalFilename());
+                attachment.setContentType(file.getContentType());
+                attachment.setSize(file.getSize());
+                attachment.setUploadedAt(Instant.now());
+                attachments.add(attachment);
+            }
+        } catch (Exception ex) {
+            cleanupFiles(attachments);
+            submissionRepository.deleteById(sAfterSave.getId());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File upload failed");
+        }
+
+        sAfterSave.setAttachments(attachments);
+        sAfterSave = submissionRepository.save(sAfterSave);
+        hub.sendCreated(sAfterSave);
+        return sAfterSave;
+    }
+
+    private Submission buildSubmission(SubmissionCreateRequest req) {
         Submission s = new Submission();
         s.setStatus(SubmissionStatus.NEW);
         s.setFormVersion(req.getFormVersion() != null ? req.getFormVersion() : "v1");
@@ -31,10 +114,34 @@ public class PublicSubmissionController {
         s.setConsents(req.getConsents());
         s.setSignature(req.getSignature());
         s.setMeta(req.getMeta());
+        return s;
+    }
 
-        Submission sAfterSave = submissionRepository.save(s);
-        hub.sendCreated(sAfterSave);
-        return sAfterSave;
+    private void validateFiles(List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) return;
+        if (files.size() > MAX_FILES) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Too many files");
+        }
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Empty file");
+            }
+            if (file.getSize() > MAX_FILE_SIZE_BYTES) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File too large");
+            }
+            String contentType = file.getContentType();
+            if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported file type");
+            }
+        }
+    }
 
+    private void cleanupFiles(List<SubmissionAttachment> attachments) {
+        for (SubmissionAttachment attachment : attachments) {
+            try {
+                gridFsTemplate.delete(Query.query(Criteria.where("_id").is(new ObjectId(attachment.getId()))));
+            } catch (Exception ignored) {
+            }
+        }
     }
 }

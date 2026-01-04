@@ -39,6 +39,7 @@ export interface SubmissionDetails extends SubmissionListItem {
     userAgent?: string;
     ip?: string;
   };
+  attachments?: SubmissionAttachment[];
 }
 
 export interface SymptomDetail {
@@ -48,4 +49,12 @@ export interface SymptomDetail {
   severity?: number | null;
   onset?: string | null;
   notes?: string | null;
+}
+
+export interface SubmissionAttachment {
+  id: string;
+  fileName: string;
+  contentType?: string;
+  size?: number;
+  uploadedAt?: string;
 }

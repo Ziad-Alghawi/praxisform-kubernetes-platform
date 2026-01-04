@@ -112,6 +112,45 @@
   }
 }
 
+/* ---- Attachments ---- */
+.attachments {
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  padding: 10px 12px;
+  text-align: left;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.attachment-item .file-meta {
+  flex: 1;
+}
+
+.attachment-item .file-name {
+  font-weight: 700;
+}
+
+.attachment-item .file-size {
+  font-size: 12px;
+  color: rgba(0,0,0,.55);
+}
+
+.attachment-item .open-ic {
+  margin-left: auto;
+}
+
+.pad {
+  padding: 16px;
+}
+
 .symptom-list {
   display: grid;
   gap: 12px;

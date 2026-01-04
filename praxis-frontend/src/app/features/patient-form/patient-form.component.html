@@ -303,6 +303,73 @@
       </mat-card>
 
 
+      <!-- Dokumente -->
+      <mat-card class="section">
+        <mat-card-title>Dokumente</mat-card-title>
+
+        <mat-card-content>
+          <div
+            class="upload-area"
+            [class.dragover]="dragActive()"
+            (drop)="onDrop($event)"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+          >
+            <input
+              type="file"
+              multiple
+              accept="image/*,application/pdf"
+              (change)="onFilesSelected($event)"
+              #fileInput
+              hidden
+            />
+
+            <div class="upload-copy">
+              <mat-icon class="upload-icon">cloud_upload</mat-icon>
+              <div>
+                <div class="upload-title">Foto oder PDF hochladen</div>
+                <div class="upload-sub">Z. B. Medikamentenplan, Allergiepass</div>
+              </div>
+            </div>
+
+            <div class="upload-actions">
+              <button mat-stroked-button type="button" (click)="fileInput.click()">
+                Dateien auswaehlen
+              </button>
+              <span class="upload-hint">Max. 5 Dateien - je 10 MB</span>
+            </div>
+          </div>
+
+          <div class="upload-list" *ngIf="attachments.length">
+            <div class="upload-item" *ngFor="let file of attachments; let i = index">
+              <mat-icon class="file-ic">{{ fileIcon(file) }}</mat-icon>
+              <div class="file-meta">
+                <div class="file-name">{{ file.name }}</div>
+                <div class="file-size">{{ formatFileSize(file.size) }}</div>
+              </div>
+              <button mat-icon-button type="button" (click)="removeAttachment(i)">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="upload-status" *ngIf="uploadState() !== 'idle'">
+            <mat-progress-bar
+              *ngIf="uploadState() === 'uploading'"
+              mode="determinate"
+              [value]="uploadProgress()"
+            ></mat-progress-bar>
+            <div class="status-text" [class.ok]="uploadState() === 'success'" [class.err]="uploadState() === 'error'">
+              <ng-container [ngSwitch]="uploadState()">
+                <span *ngSwitchCase="'uploading'">Upload laeuft... {{ uploadProgress() }}%</span>
+                <span *ngSwitchCase="'success'">Upload abgeschlossen</span>
+                <span *ngSwitchCase="'error'">Upload fehlgeschlagen</span>
+              </ng-container>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
       <!-- Einwilligungen -->
       <mat-card class="section">
         <mat-card-title>Einwilligungen</mat-card-title>

@@ -138,6 +138,34 @@
 
         <mat-card class="card section">
           <div class="section-head">
+            <h2>Dokumente</h2>
+            <span class="muted" *ngIf="s.attachments?.length">{{ s.attachments?.length || 0 }} Dateien</span>
+          </div>
+          <mat-divider></mat-divider>
+
+          <div class="attachments" *ngIf="s.attachments?.length; else noDocs">
+            <button
+              mat-stroked-button
+              type="button"
+              class="attachment-item"
+              *ngFor="let att of s.attachments"
+              (click)="openAttachment(att)"
+            >
+              <mat-icon class="file-ic">{{ attachmentIcon(att) }}</mat-icon>
+              <div class="file-meta">
+                <div class="file-name">{{ att.fileName }}</div>
+                <div class="file-size">{{ formatFileSize(att.size) }}</div>
+              </div>
+              <mat-icon class="open-ic">open_in_new</mat-icon>
+            </button>
+          </div>
+          <ng-template #noDocs>
+            <div class="muted pad">-</div>
+          </ng-template>
+        </mat-card>
+
+        <mat-card class="card section">
+          <div class="section-head">
             <h2>Einwilligungen</h2>
           </div>
           <mat-divider></mat-divider>
@@ -386,6 +414,34 @@
                 </div>
               </div>
             </div>
+          </mat-card>
+
+          <mat-card class="card section">
+            <div class="section-head">
+              <h2>Dokumente</h2>
+              <span class="muted" *ngIf="s.attachments?.length">{{ s.attachments?.length || 0 }} Dateien</span>
+            </div>
+            <mat-divider></mat-divider>
+
+            <div class="attachments" *ngIf="s.attachments?.length; else noDocsEdit">
+              <button
+                mat-stroked-button
+                type="button"
+                class="attachment-item"
+                *ngFor="let att of s.attachments"
+                (click)="openAttachment(att)"
+              >
+                <mat-icon class="file-ic">{{ attachmentIcon(att) }}</mat-icon>
+                <div class="file-meta">
+                  <div class="file-name">{{ att.fileName }}</div>
+                  <div class="file-size">{{ formatFileSize(att.size) }}</div>
+                </div>
+                <mat-icon class="open-ic">open_in_new</mat-icon>
+              </button>
+            </div>
+            <ng-template #noDocsEdit>
+              <div class="muted pad">-</div>
+            </ng-template>
           </mat-card>
 
           <!-- Einwilligungen -->

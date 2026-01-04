@@ -7,5 +7,9 @@ app:
 spring:
   mongodb:
     uri: ${MONGODB_URI:mongodb://localhost:27017/praxis}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 15MB
 server:
   port: 8080
