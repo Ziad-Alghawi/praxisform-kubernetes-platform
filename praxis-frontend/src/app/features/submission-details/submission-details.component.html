@@ -83,6 +83,29 @@
 
           <div class="medical-view">
             <div class="block">
+              <div class="k">Symptome/Beschwerden</div>
+              <mat-chip-set class="chipset" *ngIf="unique(s.medical?.symptoms || []).length; else dashS">
+                <mat-chip class="chip" *ngFor="let sym of unique(s.medical?.symptoms || [])">
+                  <mat-icon class="chip-ic">healing</mat-icon>
+                  {{ sym }}
+                </mat-chip>
+              </mat-chip-set>
+              <ng-template #dashS><div class="v muted">-</div></ng-template>
+            </div>
+
+            <div class="block">
+              <div class="k">Dauer</div>
+              <div class="v" *ngIf="s.medical?.symptomDuration; else dashD">{{ s.medical?.symptomDuration }}</div>
+              <ng-template #dashD><div class="v muted">-</div></ng-template>
+            </div>
+
+            <div class="block">
+              <div class="k">Hinweise</div>
+              <div class="v notes" *ngIf="s.medical?.symptomNotes; else dashN">{{ s.medical?.symptomNotes }}</div>
+              <ng-template #dashN><div class="v muted">-</div></ng-template>
+            </div>
+
+            <div class="block">
               <div class="k">Allergien</div>
               <mat-chip-set class="chipset" *ngIf="unique(s.medical?.allergies || []).length; else dashA">
                 <mat-chip class="chip" *ngFor="let a of unique(s.medical?.allergies || [])">
@@ -214,6 +237,44 @@
             <mat-divider></mat-divider>
 
             <div class="medical-edit" formGroupName="medical">
+              <!-- Symptome -->
+              <div class="medical-group">
+                <div class="k">Symptome/Beschwerden</div>
+
+                <mat-chip-set class="chipset" *ngIf="med().symptoms.value.length">
+                  <mat-chip class="chip" *ngFor="let s of med().symptoms.value" removable (removed)="removeChip(med().symptoms, s)">
+                    {{ s }}
+                    <button matChipRemove>
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </mat-chip>
+                </mat-chip-set>
+
+                <div class="add-row">
+                  <mat-form-field appearance="outline" class="grow">
+                    <mat-label>Weitere Symptome</mat-label>
+                    <input matInput [formControl]="extraSymptom" />
+                  </mat-form-field>
+
+                  <button mat-icon-button color="primary" type="button" class="add-btn"
+                          (click)="addExtra(med().symptoms, extraSymptom)">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </div>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Seit wann?</mat-label>
+                  <input matInput [formControl]="med().symptomDuration" placeholder="z.B. 2-3 Tage" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Weitere Hinweise</mat-label>
+                  <textarea matInput rows="3" [formControl]="med().symptomNotes"></textarea>
+                </mat-form-field>
+              </div>
+
+              <mat-divider></mat-divider>
+
               <!-- Allergien -->
               <div class="medical-group">
                 <div class="k">Allergien</div>

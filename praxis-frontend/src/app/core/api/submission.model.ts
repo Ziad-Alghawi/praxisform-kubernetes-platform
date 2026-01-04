@@ -25,6 +25,9 @@ export interface SubmissionDetails extends SubmissionListItem {
     allergies?: string[];
     medications?: string[];
     preExistingConditions?: string[];
+    symptoms?: string[];
+    symptomDuration?: string;
+    symptomNotes?: string;
   };
   consents?: {
     gdprAccepted: boolean;

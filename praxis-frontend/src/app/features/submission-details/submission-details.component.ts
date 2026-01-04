@@ -85,6 +85,9 @@ export class SubmissionDetailsComponent {
       allergies: this.fb.nonNullable.control<string[]>([]),
       medications: this.fb.nonNullable.control<string[]>([]),
       preExistingConditions: this.fb.nonNullable.control<string[]>([]),
+      symptoms: this.fb.nonNullable.control<string[]>([]),
+      symptomDuration: this.fb.control<string | null>(null),
+      symptomNotes: this.fb.control<string | null>(null),
     }),
 
     consents: this.fb.nonNullable.group({
@@ -97,6 +100,7 @@ export class SubmissionDetailsComponent {
   extraAllergy = this.fb.nonNullable.control('');
   extraMedication = this.fb.nonNullable.control('');
   extraCondition = this.fb.nonNullable.control('');
+  extraSymptom = this.fb.nonNullable.control('');
 
   // template helper
   pd = computed(() => this.form.controls.patientData.controls);
@@ -309,6 +313,9 @@ export class SubmissionDetailsComponent {
           allergies: (s.medical?.allergies ?? []) as any,
           medications: (s.medical?.medications ?? []) as any,
           preExistingConditions: (s.medical?.preExistingConditions ?? []) as any,
+          symptoms: (s.medical?.symptoms ?? []) as any,
+          symptomDuration: (s.medical?.symptomDuration ?? null) as any,
+          symptomNotes: (s.medical?.symptomNotes ?? null) as any,
         },
         consents: {
           gdprAccepted: !!s.consents?.gdprAccepted,

@@ -184,6 +184,64 @@ $border: rgba(17, 24, 39, 0.10);
   }
 }
 
+.symptom-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+
+  .muted {
+    margin: 6px 0 0;
+    color: $text-muted;
+    font-size: 12px;
+  }
+}
+
+.symptom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+
+  ::ng-deep .mdc-evolution-chip {
+    justify-content: flex-start;
+    gap: 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(17, 24, 39, 0.12);
+    background: rgba(63, 81, 181, 0.05);
+  }
+
+  ::ng-deep .mdc-evolution-chip--selected {
+    background: rgba(63, 81, 181, 0.16);
+    border-color: rgba(63, 81, 181, 0.4);
+  }
+
+  .chip-ic {
+    font-size: 18px;
+  }
+}
+
+.symptom-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  .meta-label {
+    font-size: 12px;
+    color: $text-muted;
+    margin-bottom: 6px;
+  }
+}
+
+.duration-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  ::ng-deep .mdc-evolution-chip {
+    border-radius: 999px;
+  }
+}
+
 /* Ausgewählte Chips oben */
 .chips {
   margin-top: 2px;
@@ -236,4 +294,5 @@ mat-divider {
     grid-template-columns: 1fr;
     .add-btn { width: 100%; }
   }
+  .symptom-meta { grid-template-columns: 1fr; }
 }

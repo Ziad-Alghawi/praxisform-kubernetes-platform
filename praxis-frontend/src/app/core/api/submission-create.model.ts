@@ -29,6 +29,9 @@ export interface MedicalData {
   allergies?: string[];
   medications?: string[];
   preExistingConditions?: string[];
+  symptoms?: string[];
+  symptomDuration?: string;
+  symptomNotes?: string;
 }
 
 export interface Consents {

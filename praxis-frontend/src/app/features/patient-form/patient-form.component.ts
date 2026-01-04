@@ -26,6 +26,7 @@ import {MatChipsModule} from '@angular/material/chips';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatDivider, MatListOption, MatSelectionList} from '@angular/material/list';
 type ZipOption = { zip: string; city: string };
+type SymptomOption = { value: string; label: string; icon: string };
 @Component({
   selector: 'app-patient-form',
   standalone: true,
@@ -69,11 +70,25 @@ export class PatientFormComponent {
   allergyOptions = ['Pollen', 'Hausstaub', 'Tierhaare', 'Penicillin', 'Nüsse', 'Latex'];
   medicationOptions = ['Ibuprofen', 'Paracetamol', 'ASS', 'Metformin', 'Insulin'];
   conditionOptions = ['Diabetes', 'Asthma', 'Bluthochdruck', 'Herzkrankheit', 'Schilddrüse'];
+  symptomOptions: SymptomOption[] = [
+    { value: 'Fieber', label: 'Fieber', icon: 'thermostat' },
+    { value: 'Husten', label: 'Husten', icon: 'masks' },
+    { value: 'Atemnot', label: 'Atemnot', icon: 'air' },
+    { value: 'Kopfschmerzen', label: 'Kopfschmerzen', icon: 'psychology' },
+    { value: 'Halsschmerzen', label: 'Halsschmerzen', icon: 'record_voice_over' },
+    { value: 'Schwindel', label: 'Schwindel', icon: 'sync' },
+    { value: 'Uebelkeit', label: 'Uebelkeit', icon: 'sick' },
+    { value: 'Brustschmerzen', label: 'Brustschmerzen', icon: 'favorite' },
+    { value: 'Rueckenschmerzen', label: 'Rueckenschmerzen', icon: 'back_hand' },
+    { value: 'Ausschlag', label: 'Ausschlag', icon: 'healing' },
+  ];
+  symptomDurationOptions = ['Seit heute', '2-3 Tage', '1 Woche', 'Laenger als 2 Wochen'];
 
 // Extra-Input pro Liste
   extraAllergy = this.fb.nonNullable.control('');
   extraMedication = this.fb.nonNullable.control('');
   extraCondition = this.fb.nonNullable.control('');
+  extraSymptom = this.fb.nonNullable.control('');
   constructor(
     private http: HttpClient
   ) {
@@ -102,6 +117,9 @@ export class PatientFormComponent {
       allergies: this.fb.nonNullable.control<string[]>([]),
       medications: this.fb.nonNullable.control<string[]>([]),
       preExistingConditions: this.fb.nonNullable.control<string[]>([]),
+      symptoms: this.fb.nonNullable.control<string[]>([]),
+      symptomDuration: this.fb.control<string | null>(null),
+      symptomNotes: this.fb.control<string | null>(null),
     }),
 
     consents: this.fb.nonNullable.group({
@@ -140,6 +158,9 @@ export class PatientFormComponent {
         allergies: this.form.controls.medical.controls.allergies.value,
         medications: this.form.controls.medical.controls.medications.value,
         preExistingConditions: this.form.controls.medical.controls.preExistingConditions.value,
+        symptoms: this.form.controls.medical.controls.symptoms.value,
+        symptomDuration: this.cleanOptional(v.medical.symptomDuration ?? null),
+        symptomNotes: this.cleanOptional(v.medical.symptomNotes ?? null),
       },
       consents: {
         gdprAccepted: v.consents.gdprAccepted,
@@ -183,9 +204,16 @@ export class PatientFormComponent {
         allergies: [],
         medications: [],
         preExistingConditions: [],
+        symptoms: [],
+        symptomDuration: null,
+        symptomNotes: null,
       },
       consents: { gdprAccepted: false, dataSharingAccepted: false },
     });
+    this.extraAllergy.setValue('');
+    this.extraMedication.setValue('');
+    this.extraCondition.setValue('');
+    this.extraSymptom.setValue('');
     this.form.markAsPristine();
     this.form.markAsUntouched();
   }

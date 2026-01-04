@@ -121,6 +121,55 @@
         <mat-card-title>Medizinisch</mat-card-title>
 
         <mat-card-content class="medical-block">
+          <!-- SYMPTOME -->
+          <div class="medical-group">
+            <div class="symptom-head">
+              <div>
+                <h3>Symptome & Beschwerden</h3>
+                <p class="muted">Bitte passende Symptome auswaehlen und Details ergaenzen.</p>
+              </div>
+            </div>
+
+            <mat-chip-set class="symptom-grid">
+              <mat-chip-option
+                *ngFor="let opt of symptomOptions"
+                [selected]="isSelected(med().symptoms, opt.value)"
+                (selectionChange)="toggleFromOptions(med().symptoms, opt.value, $event.selected)">
+                <mat-icon class="chip-ic">{{ opt.icon }}</mat-icon>
+                {{ opt.label }}
+              </mat-chip-option>
+            </mat-chip-set>
+
+            <div class="add-row">
+              <mat-form-field appearance="outline" class="add-input">
+                <mat-label>Weitere Symptome</mat-label>
+                <input matInput [formControl]="extraSymptom" />
+              </mat-form-field>
+
+              <button mat-flat-button color="primary" type="button" class="add-btn"
+                      (click)="addExtra(med().symptoms, extraSymptom)">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+
+            <div class="symptom-meta">
+              <div>
+                <div class="meta-label">Seit wann?</div>
+                <mat-chip-listbox class="duration-chips" [formControl]="med().symptomDuration">
+                  <mat-chip-option *ngFor="let opt of symptomDurationOptions" [value]="opt">
+                    {{ opt }}
+                  </mat-chip-option>
+                </mat-chip-listbox>
+              </div>
+
+              <mat-form-field appearance="outline" class="span-2">
+                <mat-label>Weitere Hinweise</mat-label>
+                <textarea matInput rows="3" [formControl]="med().symptomNotes"></textarea>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <mat-divider></mat-divider>
 
           <!-- ALLERGIEN -->
           <div class="medical-group">

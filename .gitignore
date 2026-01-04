@@ -68,3 +68,5 @@ tmp/
 ############################
 *.swp
 *.swo
+config.toml
+AGENTS.md
