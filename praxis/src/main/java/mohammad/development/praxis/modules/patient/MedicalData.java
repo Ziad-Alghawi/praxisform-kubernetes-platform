@@ -12,7 +12,5 @@ public class MedicalData {
     private List<String> allergies;
     private List<String> medications;
     private List<String> preExistingConditions;
-    private List<String> symptoms;
-    private String symptomDuration;
-    private String symptomNotes;
+    private List<SymptomDetail> symptoms;
 }

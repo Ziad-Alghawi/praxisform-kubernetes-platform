@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { AdminSubmissionsService } from '../../core/api/admin-submissions.service';
-import { SubmissionDetails, SubmissionStatus } from '../../core/api/submission.model';
+import { SubmissionDetails, SubmissionStatus, SymptomDetail } from '../../core/api/submission.model';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,16 +12,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatSliderModule } from '@angular/material/slider';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {ConfirmDoneDialogComponent} from '../confirm-done-dialog/confirm-done-dialog.component';
-import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormArray, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {of, switchMap} from 'rxjs';
 import {MatCheckbox, MatCheckboxModule} from '@angular/material/checkbox';
 import {MatInputModule} from '@angular/material/input';
+import {SYMPTOM_CATALOG, SYMPTOM_DURATION_OPTIONS, SymptomConfig} from '../../shared/symptoms/symptom-catalog';
 
 @Component({
   selector: 'app-submission-details',
@@ -41,6 +43,8 @@ import {MatInputModule} from '@angular/material/input';
     MatChipsModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
+    MatSliderModule,
     MatCheckboxModule,
     MatSnackBarModule,
     MatDialogModule,
@@ -56,6 +60,8 @@ export class SubmissionDetailsComponent {
   editing = signal(false);
 
   submission = signal<SubmissionDetails | null>(null);
+  symptomCatalog = SYMPTOM_CATALOG;
+  symptomDurationOptions = SYMPTOM_DURATION_OPTIONS;
 
   id = computed(() => this.route.snapshot.paramMap.get('id')!);
 
@@ -85,9 +91,7 @@ export class SubmissionDetailsComponent {
       allergies: this.fb.nonNullable.control<string[]>([]),
       medications: this.fb.nonNullable.control<string[]>([]),
       preExistingConditions: this.fb.nonNullable.control<string[]>([]),
-      symptoms: this.fb.nonNullable.control<string[]>([]),
-      symptomDuration: this.fb.control<string | null>(null),
-      symptomNotes: this.fb.control<string | null>(null),
+      symptoms: this.fb.array([]),
     }),
 
     consents: this.fb.nonNullable.group({
@@ -107,6 +111,9 @@ export class SubmissionDetailsComponent {
   addr = computed(() => this.form.controls.patientData.controls.address.controls);
   med = computed(() => this.form.controls.medical.controls);
   cons = computed(() => this.form.controls.consents.controls);
+  get symptomControls() {
+    return (this.form.controls.medical.controls.symptoms as FormArray).controls;
+  }
 
   // Button aktiv wenn: nicht saving UND (Form dirty ODER Status != DONE)
   canMarkDone = computed(() => {
@@ -186,6 +193,22 @@ export class SubmissionDetailsComponent {
     return Array.from(new Set((list ?? []).map(x => (x ?? '').trim()).filter(Boolean)));
   }
 
+  normalizeSymptoms(raw: any): SymptomDetail[] {
+    if (!raw || !Array.isArray(raw)) return [];
+    if (raw.length && typeof raw[0] === 'string') {
+      return raw.map((label: string) => ({
+        key: this.symptomCatalog.find(item => item.label.toLowerCase() === label.toLowerCase())?.key
+          ?? label.toLowerCase().replace(/\s+/g, '-'),
+        label,
+        severity: null,
+        onset: null,
+        option: null,
+        notes: null,
+      }));
+    }
+    return raw as SymptomDetail[];
+  }
+
   // --- Medical list editor helpers ---
   addExtra(ctrl: { value: string[]; setValue: (v: string[]) => void }, extraCtrl: { value: string; setValue: (v: string) => void }) {
     const raw = (extraCtrl.value ?? '').trim();
@@ -203,6 +226,32 @@ export class SubmissionDetailsComponent {
     const current = (ctrl.value ?? []).filter(x => x !== item);
     ctrl.setValue(current);
     this.form.markAsDirty();
+  }
+
+  removeSymptom(index: number) {
+    (this.form.controls.medical.controls.symptoms as FormArray).removeAt(index);
+    this.form.markAsDirty();
+  }
+
+  addCustomSymptom() {
+    const raw = (this.extraSymptom.value ?? '').trim();
+    if (!raw) return;
+
+    const arr = this.form.controls.medical.controls.symptoms as FormArray;
+    const exists = arr.controls.some(ctrl => (ctrl as any).value?.label?.toLowerCase() === raw.toLowerCase());
+    if (exists) {
+      this.extraSymptom.setValue('');
+      return;
+    }
+
+    const key = `custom-${Date.now()}`;
+    arr.push(this.createSymptomGroup({ key, label: raw, icon: 'healing' }));
+    this.extraSymptom.setValue('');
+    this.form.markAsDirty();
+  }
+
+  symptomConfig(key: string) {
+    return this.symptomCatalog.find(item => item.key === key) ?? { key, label: key, icon: 'healing' };
   }
 
   markDone() {
@@ -294,6 +343,7 @@ export class SubmissionDetailsComponent {
 
 
   private patchFormFromSubmission(s: SubmissionDetails) {
+    this.resetSymptomsArray(this.normalizeSymptoms(s.medical?.symptoms));
     this.form.patchValue(
       {
         patientData: {
@@ -313,9 +363,6 @@ export class SubmissionDetailsComponent {
           allergies: (s.medical?.allergies ?? []) as any,
           medications: (s.medical?.medications ?? []) as any,
           preExistingConditions: (s.medical?.preExistingConditions ?? []) as any,
-          symptoms: (s.medical?.symptoms ?? []) as any,
-          symptomDuration: (s.medical?.symptomDuration ?? null) as any,
-          symptomNotes: (s.medical?.symptomNotes ?? null) as any,
         },
         consents: {
           gdprAccepted: !!s.consents?.gdprAccepted,
@@ -324,5 +371,29 @@ export class SubmissionDetailsComponent {
       },
       { emitEvent: false }
     );
+  }
+
+  private resetSymptomsArray(symptoms: SymptomDetail[]) {
+    const arr = this.form.controls.medical.controls.symptoms as FormArray;
+    arr.clear();
+    symptoms.forEach(item => {
+      arr.push(this.createSymptomGroup({
+        key: item.key,
+        label: item.label,
+        icon: this.symptomConfig(item.key).icon,
+        options: this.symptomConfig(item.key).options,
+      }, item));
+    });
+  }
+
+  private createSymptomGroup(config: SymptomConfig, value?: SymptomDetail) {
+    return this.fb.group({
+      key: this.fb.nonNullable.control(value?.key ?? config.key),
+      label: this.fb.nonNullable.control(value?.label ?? config.label),
+      option: this.fb.control<string | null>(value?.option ?? null),
+      severity: this.fb.nonNullable.control(value?.severity ?? 5),
+      onset: this.fb.control<string | null>(value?.onset ?? null),
+      notes: this.fb.control<string | null>(value?.notes ?? null),
+    });
   }
 }

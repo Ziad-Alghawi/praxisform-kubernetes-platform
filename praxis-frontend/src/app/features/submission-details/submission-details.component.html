@@ -84,25 +84,21 @@
           <div class="medical-view">
             <div class="block">
               <div class="k">Symptome/Beschwerden</div>
-              <mat-chip-set class="chipset" *ngIf="unique(s.medical?.symptoms || []).length; else dashS">
-                <mat-chip class="chip" *ngFor="let sym of unique(s.medical?.symptoms || [])">
-                  <mat-icon class="chip-ic">healing</mat-icon>
-                  {{ sym }}
-                </mat-chip>
-              </mat-chip-set>
+              <div class="symptom-list" *ngIf="normalizeSymptoms(s.medical?.symptoms).length; else dashS">
+                <div class="symptom-item" *ngFor="let sym of normalizeSymptoms(s.medical?.symptoms)">
+                  <div class="symptom-title">
+                    <mat-icon class="chip-ic">{{ symptomConfig(sym.key).icon }}</mat-icon>
+                    <span>{{ sym.label }}</span>
+                  </div>
+                  <div class="symptom-meta">
+                    <span *ngIf="sym.option">Option: {{ sym.option }}</span>
+                    <span *ngIf="sym.severity !== null && sym.severity !== undefined">Staerke: {{ sym.severity }}/10</span>
+                    <span *ngIf="sym.onset">Seit wann: {{ sym.onset }}</span>
+                  </div>
+                  <div class="symptom-notes" *ngIf="sym.notes">{{ sym.notes }}</div>
+                </div>
+              </div>
               <ng-template #dashS><div class="v muted">-</div></ng-template>
-            </div>
-
-            <div class="block">
-              <div class="k">Dauer</div>
-              <div class="v" *ngIf="s.medical?.symptomDuration; else dashD">{{ s.medical?.symptomDuration }}</div>
-              <ng-template #dashD><div class="v muted">-</div></ng-template>
-            </div>
-
-            <div class="block">
-              <div class="k">Hinweise</div>
-              <div class="v notes" *ngIf="s.medical?.symptomNotes; else dashN">{{ s.medical?.symptomNotes }}</div>
-              <ng-template #dashN><div class="v muted">-</div></ng-template>
             </div>
 
             <div class="block">
@@ -241,36 +237,69 @@
               <div class="medical-group">
                 <div class="k">Symptome/Beschwerden</div>
 
-                <mat-chip-set class="chipset" *ngIf="med().symptoms.value.length">
-                  <mat-chip class="chip" *ngFor="let s of med().symptoms.value" removable (removed)="removeChip(med().symptoms, s)">
-                    {{ s }}
-                    <button matChipRemove>
-                      <mat-icon>close</mat-icon>
-                    </button>
-                  </mat-chip>
-                </mat-chip-set>
-
                 <div class="add-row">
                   <mat-form-field appearance="outline" class="grow">
-                    <mat-label>Weitere Symptome</mat-label>
+                    <mat-label>Weiteres Symptom</mat-label>
                     <input matInput [formControl]="extraSymptom" />
                   </mat-form-field>
 
                   <button mat-icon-button color="primary" type="button" class="add-btn"
-                          (click)="addExtra(med().symptoms, extraSymptom)">
+                          (click)="addCustomSymptom()">
                     <mat-icon>add</mat-icon>
                   </button>
                 </div>
 
-                <mat-form-field appearance="outline">
-                  <mat-label>Seit wann?</mat-label>
-                  <input matInput [formControl]="med().symptomDuration" placeholder="z.B. 2-3 Tage" />
-                </mat-form-field>
+                <div class="symptom-edit-list" formArrayName="symptoms" *ngIf="symptomControls.length">
+                  <div class="symptom-edit-card" *ngFor="let s of symptomControls; let i = index" [formGroupName]="i">
+                    <div class="symptom-card-head">
+                      <div class="symptom-head-left">
+                        <mat-icon class="symptom-ic">{{ symptomConfig(s.value.key).icon }}</mat-icon>
+                        <div>
+                          <div class="symptom-title">{{ s.value.label }}</div>
+                          <div class="symptom-sub">Details</div>
+                        </div>
+                      </div>
+                      <button mat-icon-button type="button" class="symptom-remove" (click)="removeSymptom(i)">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </div>
 
-                <mat-form-field appearance="outline">
-                  <mat-label>Weitere Hinweise</mat-label>
-                  <textarea matInput rows="3" [formControl]="med().symptomNotes"></textarea>
-                </mat-form-field>
+                    <div class="symptom-row" *ngIf="symptomConfig(s.value.key).options?.length">
+                      <div class="meta-label">Auswahl</div>
+                      <mat-chip-listbox class="option-chips" formControlName="option" [multiple]="false">
+                        <mat-chip-option
+                          *ngFor="let opt of symptomConfig(s.value.key).options"
+                          [value]="opt">
+                          {{ opt }}
+                        </mat-chip-option>
+                      </mat-chip-listbox>
+                    </div>
+
+                    <div class="symptom-row">
+                      <div class="meta-label">Staerke (0-10)</div>
+                      <div class="severity-row">
+                        <mat-slider min="0" max="10" step="1">
+                          <input matSliderThumb formControlName="severity" />
+                        </mat-slider>
+                        <div class="severity-value">{{ s.value.severity }}</div>
+                      </div>
+                    </div>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Seit wann?</mat-label>
+                      <mat-select formControlName="onset">
+                        <mat-option *ngFor="let opt of symptomDurationOptions" [value]="opt">
+                          {{ opt }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Weitere Hinweise</mat-label>
+                      <textarea matInput rows="3" formControlName="notes"></textarea>
+                    </mat-form-field>
+                  </div>
+                </div>
               </div>
 
               <mat-divider></mat-divider>

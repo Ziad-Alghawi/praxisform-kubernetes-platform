@@ -6,7 +6,7 @@ import {
   AbstractControl,
   Validators,
   ValidationErrors,
-  FormsModule, FormControl
+  FormsModule, FormArray, FormControl
 } from '@angular/forms';
 
 import { MatCardModule } from '@angular/material/card';
@@ -16,17 +16,21 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { PublicSubmissionsService } from '../../core/api/public-submissions.service';
 import { SubmissionCreateRequest } from '../../core/api/submission-create.model';
-import {HttpClient} from '@angular/common/http';
-import {debounceTime, distinctUntilChanged, filter, of, switchMap} from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { debounceTime, distinctUntilChanged, startWith } from 'rxjs';
 import {MatDatepicker, MatDatepickerInput, MatDatepickerToggle} from '@angular/material/datepicker';
-import {MatChipsModule} from '@angular/material/chips';
+import { MatChipOption, MatChipSelectionChange, MatChipsModule } from '@angular/material/chips';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatDivider, MatListOption, MatSelectionList} from '@angular/material/list';
-type ZipOption = { zip: string; city: string };
-type SymptomOption = { value: string; label: string; icon: string };
+import {MatDivider} from '@angular/material/list';
+import {MatSelectModule} from '@angular/material/select';
+import {MatSliderModule} from '@angular/material/slider';
+import {SYMPTOM_CATALOG, SYMPTOM_DURATION_OPTIONS, SymptomConfig} from '../../shared/symptoms/symptom-catalog';
+import { SymptomDetailDialogComponent } from './symptom-detail-dialog.component';
+import { SymptomDetail } from '../../core/api/submission-create.model';
 @Component({
   selector: 'app-patient-form',
   standalone: true,
@@ -40,11 +44,14 @@ type SymptomOption = { value: string; label: string; icon: string };
     MatIconModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
+    MatDialogModule,
     MatDatepickerInput,
     MatDatepickerToggle,
     MatDatepicker,
     MatChipsModule,
     MatFormFieldModule,
+    MatSelectModule,
+    MatSliderModule,
     FormsModule,
     MatDivider,
   ],
@@ -56,6 +63,7 @@ export class PatientFormComponent {
   private fb = inject(FormBuilder);
   private api = inject(PublicSubmissionsService);
   private snack = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
   // Patterns (tablet-freundlich)
   private readonly zipDE = /^\d{5}$/;
@@ -70,19 +78,8 @@ export class PatientFormComponent {
   allergyOptions = ['Pollen', 'Hausstaub', 'Tierhaare', 'Penicillin', 'Nüsse', 'Latex'];
   medicationOptions = ['Ibuprofen', 'Paracetamol', 'ASS', 'Metformin', 'Insulin'];
   conditionOptions = ['Diabetes', 'Asthma', 'Bluthochdruck', 'Herzkrankheit', 'Schilddrüse'];
-  symptomOptions: SymptomOption[] = [
-    { value: 'Fieber', label: 'Fieber', icon: 'thermostat' },
-    { value: 'Husten', label: 'Husten', icon: 'masks' },
-    { value: 'Atemnot', label: 'Atemnot', icon: 'air' },
-    { value: 'Kopfschmerzen', label: 'Kopfschmerzen', icon: 'psychology' },
-    { value: 'Halsschmerzen', label: 'Halsschmerzen', icon: 'record_voice_over' },
-    { value: 'Schwindel', label: 'Schwindel', icon: 'sync' },
-    { value: 'Uebelkeit', label: 'Uebelkeit', icon: 'sick' },
-    { value: 'Brustschmerzen', label: 'Brustschmerzen', icon: 'favorite' },
-    { value: 'Rueckenschmerzen', label: 'Rueckenschmerzen', icon: 'back_hand' },
-    { value: 'Ausschlag', label: 'Ausschlag', icon: 'healing' },
-  ];
-  symptomDurationOptions = ['Seit heute', '2-3 Tage', '1 Woche', 'Laenger als 2 Wochen'];
+  symptomCatalog = SYMPTOM_CATALOG;
+  symptomDurationOptions = SYMPTOM_DURATION_OPTIONS;
 
 // Extra-Input pro Liste
   extraAllergy = this.fb.nonNullable.control('');
@@ -117,9 +114,7 @@ export class PatientFormComponent {
       allergies: this.fb.nonNullable.control<string[]>([]),
       medications: this.fb.nonNullable.control<string[]>([]),
       preExistingConditions: this.fb.nonNullable.control<string[]>([]),
-      symptoms: this.fb.nonNullable.control<string[]>([]),
-      symptomDuration: this.fb.control<string | null>(null),
-      symptomNotes: this.fb.control<string | null>(null),
+      symptoms: this.fb.array([]),
     }),
 
     consents: this.fb.nonNullable.group({
@@ -133,6 +128,9 @@ export class PatientFormComponent {
   addr = computed(() => this.form.controls.patientData.controls.address.controls);
   cons = computed(() => this.form.controls.consents.controls);
   med = computed(() => this.form.controls.medical.controls);
+  symptomValues$ = (this.form.controls.medical.controls.symptoms as FormArray).valueChanges.pipe(
+    startWith((this.form.controls.medical.controls.symptoms as FormArray).getRawValue() as SymptomDetail[])
+  );
 
   submit() {
     if (this.form.invalid) {
@@ -158,9 +156,7 @@ export class PatientFormComponent {
         allergies: this.form.controls.medical.controls.allergies.value,
         medications: this.form.controls.medical.controls.medications.value,
         preExistingConditions: this.form.controls.medical.controls.preExistingConditions.value,
-        symptoms: this.form.controls.medical.controls.symptoms.value,
-        symptomDuration: this.cleanOptional(v.medical.symptomDuration ?? null),
-        symptomNotes: this.cleanOptional(v.medical.symptomNotes ?? null),
+        symptoms: (this.form.controls.medical.controls.symptoms as FormArray).getRawValue(),
       },
       consents: {
         gdprAccepted: v.consents.gdprAccepted,
@@ -204,12 +200,10 @@ export class PatientFormComponent {
         allergies: [],
         medications: [],
         preExistingConditions: [],
-        symptoms: [],
-        symptomDuration: null,
-        symptomNotes: null,
       },
       consents: { gdprAccepted: false, dataSharingAccepted: false },
     });
+    (this.form.controls.medical.controls.symptoms as FormArray).clear();
     this.extraAllergy.setValue('');
     this.extraMedication.setValue('');
     this.extraCondition.setValue('');
@@ -390,6 +384,95 @@ export class PatientFormComponent {
 
   isSelected(ctrl: FormControl<string[]>, value: string) {
     return ctrl.value.includes(value);
+  }
+
+  isSymptomSelected(key: string) {
+    return this.findSymptomIndex(key) >= 0;
+  }
+
+  onSymptomSelection(config: SymptomConfig, change: MatChipSelectionChange) {
+    const selected = change.selected;
+    const idx = this.findSymptomIndex(config.key);
+    if (selected && idx === -1) {
+      this.openSymptomDialog(config, undefined, change.source);
+      return;
+    }
+    if (!selected && idx >= 0) {
+      (this.form.controls.medical.controls.symptoms as FormArray).removeAt(idx);
+    }
+  }
+
+  editSymptom(symptom: SymptomDetail) {
+    const config = this.symptomConfig(symptom.key);
+    this.openSymptomDialog(config, symptom);
+  }
+
+  removeSymptomByKey(key: string) {
+    const idx = this.findSymptomIndex(key);
+    if (idx >= 0) {
+      (this.form.controls.medical.controls.symptoms as FormArray).removeAt(idx);
+    }
+  }
+
+  addCustomSymptom() {
+    const raw = (this.extraSymptom.value ?? '').trim();
+    if (!raw) return;
+
+    const arr = this.form.controls.medical.controls.symptoms as FormArray;
+    const exists = arr.controls.some(ctrl => (ctrl as any).value?.label?.toLowerCase() === raw.toLowerCase());
+    if (exists) {
+      this.extraSymptom.setValue('');
+      return;
+    }
+
+    const key = `custom-${Date.now()}`;
+    const config: SymptomConfig = { key, label: raw, icon: 'healing' };
+    this.extraSymptom.setValue('');
+    this.openSymptomDialog(config);
+  }
+
+  symptomConfig(key: string) {
+    return this.symptomCatalog.find(item => item.key === key) ?? { key, label: key, icon: 'healing' };
+  }
+
+  private createSymptomGroup(config: SymptomConfig) {
+    return this.fb.group({
+      key: this.fb.nonNullable.control(config.key),
+      label: this.fb.nonNullable.control(config.label),
+      option: this.fb.control<string | null>(null),
+      severity: this.fb.nonNullable.control(5),
+      onset: this.fb.control<string | null>(null),
+      notes: this.fb.control<string | null>(null),
+    });
+  }
+
+  private openSymptomDialog(config: SymptomConfig, existing?: SymptomDetail, chip?: MatChipOption) {
+    const ref = this.dialog.open(SymptomDetailDialogComponent, {
+      width: '520px',
+      maxWidth: '95vw',
+      disableClose: true,
+      data: { config, value: existing ?? null },
+    });
+
+    ref.afterClosed().subscribe((result: SymptomDetail | null) => {
+      if (!result) {
+        chip?.deselect();
+        return;
+      }
+      const idx = this.findSymptomIndex(result.key);
+      const arr = this.form.controls.medical.controls.symptoms as FormArray;
+      if (idx >= 0) {
+        arr.at(idx).patchValue(result);
+      } else {
+        arr.push(this.createSymptomGroup(config));
+        arr.at(arr.length - 1).patchValue(result);
+      }
+    });
+  }
+
+  private findSymptomIndex(key: string) {
+    const arr = this.form.controls.medical.controls.symptoms as FormArray;
+    return arr.controls.findIndex(ctrl => (ctrl as any).value?.key === key);
   }
 
   // medicalConfigs = [

@@ -25,9 +25,7 @@ export interface SubmissionDetails extends SubmissionListItem {
     allergies?: string[];
     medications?: string[];
     preExistingConditions?: string[];
-    symptoms?: string[];
-    symptomDuration?: string;
-    symptomNotes?: string;
+    symptoms?: SymptomDetail[];
   };
   consents?: {
     gdprAccepted: boolean;
@@ -41,4 +39,13 @@ export interface SubmissionDetails extends SubmissionListItem {
     userAgent?: string;
     ip?: string;
   };
+}
+
+export interface SymptomDetail {
+  key: string;
+  label: string;
+  option?: string | null;
+  severity?: number | null;
+  onset?: string | null;
+  notes?: string | null;
 }

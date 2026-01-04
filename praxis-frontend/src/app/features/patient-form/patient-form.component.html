@@ -120,7 +120,7 @@
       <mat-card class="section">
         <mat-card-title>Medizinisch</mat-card-title>
 
-        <mat-card-content class="medical-block">
+        <mat-card-content class="medical-block" formGroupName="medical">
           <!-- SYMPTOME -->
           <div class="medical-group">
             <div class="symptom-head">
@@ -132,13 +132,31 @@
 
             <mat-chip-set class="symptom-grid">
               <mat-chip-option
-                *ngFor="let opt of symptomOptions"
-                [selected]="isSelected(med().symptoms, opt.value)"
-                (selectionChange)="toggleFromOptions(med().symptoms, opt.value, $event.selected)">
+                *ngFor="let opt of symptomCatalog"
+                [selected]="isSymptomSelected(opt.key)"
+                (selectionChange)="onSymptomSelection(opt, $event)">
                 <mat-icon class="chip-ic">{{ opt.icon }}</mat-icon>
                 {{ opt.label }}
               </mat-chip-option>
             </mat-chip-set>
+
+            <ng-container *ngIf="(symptomValues$ | async) as symptomValues">
+              <div class="selected-symptoms" *ngIf="symptomValues.length">
+                <div class="meta-label">Ausgewaehlt</div>
+                <mat-chip-set>
+                  <mat-chip *ngFor="let sym of symptomValues">
+                    <mat-icon class="chip-ic">{{ symptomConfig(sym.key).icon }}</mat-icon>
+                    {{ sym.label }}
+                    <button mat-icon-button type="button" (click)="editSymptom(sym); $event.stopPropagation()">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button type="button" (click)="removeSymptomByKey(sym.key); $event.stopPropagation()">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </mat-chip>
+                </mat-chip-set>
+              </div>
+            </ng-container>
 
             <div class="add-row">
               <mat-form-field appearance="outline" class="add-input">
@@ -147,26 +165,11 @@
               </mat-form-field>
 
               <button mat-flat-button color="primary" type="button" class="add-btn"
-                      (click)="addExtra(med().symptoms, extraSymptom)">
+                      (click)="addCustomSymptom()">
                 <mat-icon>add</mat-icon>
               </button>
             </div>
 
-            <div class="symptom-meta">
-              <div>
-                <div class="meta-label">Seit wann?</div>
-                <mat-chip-listbox class="duration-chips" [formControl]="med().symptomDuration">
-                  <mat-chip-option *ngFor="let opt of symptomDurationOptions" [value]="opt">
-                    {{ opt }}
-                  </mat-chip-option>
-                </mat-chip-listbox>
-              </div>
-
-              <mat-form-field appearance="outline" class="span-2">
-                <mat-label>Weitere Hinweise</mat-label>
-                <textarea matInput rows="3" [formControl]="med().symptomNotes"></textarea>
-              </mat-form-field>
-            </div>
           </div>
 
           <mat-divider></mat-divider>
