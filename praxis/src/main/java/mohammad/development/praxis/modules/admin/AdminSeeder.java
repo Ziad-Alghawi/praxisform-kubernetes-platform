@@ -21,7 +21,7 @@ public class AdminSeeder implements CommandLineRunner {
 
         Admin admin = new Admin();
         admin.setUsername("admin");
-        admin.setPasswordHash(passwordEncoder.encode("admin")); // später per ENV/Secret
+        admin.setPasswordHash(passwordEncoder.encode("yIG8wsTGE9wLcAdipSFO")); // später per ENV/Secret
         admin.setRoles(Set.of("ADMIN"));
         admin.setEnabled(true);
 
