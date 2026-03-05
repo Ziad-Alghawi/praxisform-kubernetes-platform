@@ -46,7 +46,7 @@ public class SseHub {
                 emitter.send(SseEmitter.event()
                         .name(eventName)
                         .data(payload));
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException e) {
                 emitters.remove(emitter);
             }
         }
