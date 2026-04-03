@@ -70,8 +70,6 @@ backend:build:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - praxis/**/*
   needs:
     - job: backend:test
       optional: true
@@ -107,10 +105,8 @@ frontend:build:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - praxis-frontend/**/*
   needs:
-    - job: frontend:test
+    - job: frontend:lint
       optional: true
 
 # ============================================
@@ -130,10 +126,9 @@ docker:backend:
     - docker push $BACKEND_IMAGE:latest
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - praxis/**/*
   needs:
-    - backend:build
+    - job: backend:build
+      optional: true
 
 docker:frontend:
   stage: docker
@@ -148,10 +143,9 @@ docker:frontend:
     - docker push $FRONTEND_IMAGE:latest
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - praxis-frontend/**/*
   needs:
-    - frontend:build
+    - job: frontend:build
+      optional: true
 
 # ============================================
 # DEPLOY JOB
@@ -178,14 +172,25 @@ deploy:
         # Docker Registry Login
         echo '$CI_REGISTRY_PASSWORD' | docker login -u '$CI_REGISTRY_USER' --password-stdin $CI_REGISTRY
         
-        # CI_REGISTRY_IMAGE Variable für docker-compose setzen
-        echo 'CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE' > .env.ci
+        # CI_REGISTRY_IMAGE zur .env hinzufügen/aktualisieren
+        if grep -q 'CI_REGISTRY_IMAGE' .env 2>/dev/null; then
+          sed -i 's|CI_REGISTRY_IMAGE=.*|CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE|' .env
+        else
+          echo 'CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE' >> .env
+        fi
         
-        # Images pullen mit der .env.ci
-        docker compose --env-file .env --env-file .env.ci pull
+        # Docker Compose Command ermitteln (V1 oder V2)
+        if command -v docker-compose &> /dev/null; then
+          DC='docker-compose'
+        else
+          DC='docker compose'
+        fi
+        
+        # Images pullen
+        \$DC pull
         
         # Container neu starten
-        docker compose --env-file .env --env-file .env.ci up -d
+        \$DC up -d
         
         # Alte Images aufräumen
         docker image prune -f
