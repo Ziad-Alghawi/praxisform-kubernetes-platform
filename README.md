@@ -1,7 +1,7 @@
 <h1 align="center">PraxisForm</h1>
 
 <p align="center">
-  Digitale Patientenaufnahme für Arztpraxen – papierlos, sicher und in Echtzeit.
+  Digital patient intake for medical practices – paperless, secure, and in real time.
 </p>
 
 <p align="center">
@@ -10,93 +10,92 @@
   <img src="https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb&logoColor=white" />
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" />
   <img src="https://img.shields.io/badge/Java-17+-ED8B00?logo=openjdk&logoColor=white" />
-  <img src="https://img.shields.io/badge/License-Proprietary-lightgrey" />
 </p>
 
 ---
 
-## 📋 Inhaltsverzeichnis
+## 📋 Table of Contents
 
-- [Über das Projekt](#-über-das-projekt)
+- [About the Project](#-about-the-project)
 - [Features](#-features)
-- [Tech-Stack](#-tech-stack)
-- [Projektstruktur](#-projektstruktur)
-- [Voraussetzungen](#-voraussetzungen)
-- [Installation & Start](#-installation--start)
-- [Umgebungsvariablen](#-umgebungsvariablen)
-- [API-Übersicht](#-api-übersicht)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Prerequisites](#-prerequisites)
+- [Installation & Getting Started](#-installation--getting-started)
+- [Environment Variables](#-environment-variables)
+- [API Overview](#-api-overview)
 - [Tests](#-tests)
 - [Deployment](#-deployment)
 
 ---
 
-## 🩺 Über das Projekt
+## 🩺 About the Project
 
-**PraxisForm** ersetzt den klassischen Papier-Anamnesebogen in Arztpraxen durch ein vollständig digitales System. Patienten füllen ein mehrstufiges Online-Formular aus – inklusive persönlicher Daten, medizinischer Anamnese, Symptomerfassung, Dateianhängen und digitaler Unterschrift. Die Praxis-Mitarbeiter sehen eingegangene Formulare in Echtzeit auf einem Admin-Dashboard und können diese bearbeiten, filtern und als erledigt markieren.
+**PraxisForm** replaces the traditional paper-based medical history form in doctor's offices with a fully digital system. Patients fill out a multi-step online form – including personal data, medical history, symptom assessment, file attachments, and a digital signature. Practice staff can view incoming submissions in real time on an admin dashboard, and can edit, filter, and mark them as completed.
 
 ---
 
 ## ✨ Features
 
-| Bereich | Funktionalität |
-|---------|----------------|
-| **Patientenformular** | Mehrstufiger Stepper mit Validierung (Persönliche Daten → Anamnese → Symptome → Einwilligung → Unterschrift) |
-| **Datei-Upload** | Bis zu 5 Dateien (PDF, JPEG, PNG, WebP), max. 10 MB pro Datei, gespeichert via MongoDB GridFS |
-| **Digitale Unterschrift** | Touch-/Maus-basierte Signaturerfassung direkt im Browser |
-| **Admin-Dashboard** | Tabellarische Übersicht aller Einreichungen mit Filterung, Suche und Paginierung |
-| **Echtzeit-Updates** | Server-Sent Events (SSE) für Live-Benachrichtigungen bei neuen Einreichungen |
-| **Status-Workflow** | Dreistufiger Workflow: `NEU` → `GESEHEN` → `ERLEDIGT` |
-| **Detailansicht** | Vollständige Ansicht & Bearbeitung einzelner Einreichungen inkl. Datei-Download |
-| **Authentifizierung** | JWT-basierte Admin-Authentifizierung mit automatischem Admin-Seeding |
-| **Responsive UI** | Angular Material Design – optimiert für Desktop, Tablet und mobile Geräte |
+| Area | Functionality |
+|------|---------------|
+| **Patient Form** | Multi-step stepper with validation (Personal Data → Medical History → Symptoms → Consent → Signature) |
+| **File Upload** | Up to 5 files (PDF, JPEG, PNG, WebP), max. 10 MB per file, stored via MongoDB GridFS |
+| **Digital Signature** | Touch-/mouse-based signature capture directly in the browser |
+| **Admin Dashboard** | Tabular overview of all submissions with filtering, search, and pagination |
+| **Real-Time Updates** | Server-Sent Events (SSE) for live notifications on new submissions |
+| **Status Workflow** | Three-stage workflow: `NEW` → `VIEWED` → `DONE` |
+| **Detail View** | Full view & editing of individual submissions incl. file download |
+| **Authentication** | JWT-based admin authentication with automatic admin seeding |
+| **Responsive UI** | Angular Material Design – optimized for desktop, tablet, and mobile devices |
 
 ---
 
-## 🛠 Tech-Stack
+## 🛠 Tech Stack
 
 ### Backend
-| Technologie | Version | Verwendung |
-|-------------|---------|------------|
-| **Java** | 17+ | Programmiersprache |
-| **Spring Boot** | 4.0 | REST-API-Framework |
-| **Spring Security** | – | Authentifizierung & Autorisierung |
-| **Spring Data MongoDB** | – | Datenbankzugriff & GridFS |
-| **JJWT** | 0.12.5 | JWT-Token-Erzeugung & -Validierung |
-| **Lombok** | – | Boilerplate-Reduktion |
-| **JaCoCo** | 0.8.12 | Code-Coverage-Reports |
-| **Maven** | 3.9+ | Build-Tool |
+| Technology | Version | Usage |
+|------------|---------|-------|
+| **Java** | 17+ | Programming language |
+| **Spring Boot** | 4.0 | REST API framework |
+| **Spring Security** | – | Authentication & authorization |
+| **Spring Data MongoDB** | – | Database access & GridFS |
+| **JJWT** | 0.12.5 | JWT token generation & validation |
+| **Lombok** | – | Boilerplate reduction |
+| **JaCoCo** | 0.8.12 | Code coverage reports |
+| **Maven** | 3.9+ | Build tool |
 
 ### Frontend
-| Technologie | Version | Verwendung |
-|-------------|---------|------------|
-| **Angular** | 21 | SPA-Framework |
-| **Angular Material** | 21 | UI-Komponentenbibliothek |
-| **TypeScript** | 5.9 | Programmiersprache |
-| **RxJS** | 7.8 | Reaktive Programmierung |
-| **Vitest** | 4.0 | Unit-Testing |
-| **Nginx** | alpine | Produktions-Webserver |
+| Technology | Version | Usage |
+|------------|---------|-------|
+| **Angular** | 21 | SPA framework |
+| **Angular Material** | 21 | UI component library |
+| **TypeScript** | 5.9 | Programming language |
+| **RxJS** | 7.8 | Reactive programming |
+| **Vitest** | 4.0 | Unit testing |
+| **Nginx** | alpine | Production web server |
 
-### Infrastruktur
-| Technologie | Verwendung |
-|-------------|------------|
-| **MongoDB** | Dokumenten-Datenbank & GridFS für Datei-Uploads |
-| **Docker / Docker Compose** | Containerisierung & Orchestrierung |
-| **GitLab CI/CD** | Automatisierte Builds & Deployments |
+### Infrastructure
+| Technology | Usage |
+|------------|-------|
+| **MongoDB** | Document database & GridFS for file uploads |
+| **Docker / Docker Compose** | Containerization & orchestration |
+| **GitLab CI/CD** | Automated builds & deployments |
 
 ---
 
-## 📁 Projektstruktur
+## 📁 Project Structure
 
 ```
 PraxisForm/
-├── docker-compose.yml              # Lokale Entwicklungsumgebung
-├── docker-compose.prod.yml         # Produktions-Konfiguration
+├── docker-compose.yml              # Local development environment
+├── docker-compose.prod.yml         # Production configuration
 │
 ├── praxis/                         # 🔧 Spring Boot Backend
 │   ├── Dockerfile
 │   ├── pom.xml
 │   ├── src/main/java/.../praxis/
-│   │   ├── PraxisApplication.java          # Einstiegspunkt
+│   │   ├── PraxisApplication.java          # Entry point
 │   │   ├── controllers/
 │   │   │   ├── AuthController.java         # POST /api/auth/login
 │   │   │   ├── PublicSubmissionController   # POST /api/submissions
@@ -106,9 +105,9 @@ PraxisForm/
 │   │   │   ├── patient/                    # Submission, PatientData, MedicalData, ...
 │   │   │   ├── admin/                      # Admin, JwtService, SecurityConfig, SseHub
 │   │   │   └── form/                       # FormDefinition (JSON Schema)
-│   │   ├── DTOs/                           # Request/Response-Objekte
+│   │   ├── DTOs/                           # Request/Response objects
 │   │   └── repos/                          # Spring Data Repositories
-│   └── src/test/                           # Unit- & Integrationstests
+│   └── src/test/                           # Unit & integration tests
 │
 ├── praxis-frontend/                # 🎨 Angular Frontend
 │   ├── Dockerfile
@@ -116,46 +115,46 @@ PraxisForm/
 │   ├── package.json
 │   ├── src/app/
 │   │   ├── features/
-│   │   │   ├── patient-form/               # Patientenformular (Stepper)
-│   │   │   ├── admin/                      # Admin-Dashboard mit SSE
-│   │   │   ├── submission-details/         # Detailansicht einer Einreichung
-│   │   │   ├── login/                      # Admin-Login
-│   │   │   └── submission-success/         # Erfolgsseite nach Einreichung
+│   │   │   ├── patient-form/               # Patient form (stepper)
+│   │   │   ├── admin/                      # Admin dashboard with SSE
+│   │   │   ├── submission-details/         # Submission detail view
+│   │   │   ├── login/                      # Admin login
+│   │   │   └── submission-success/         # Success page after submission
 │   │   ├── core/
-│   │   │   ├── api/                        # API-Services & Models
+│   │   │   ├── api/                        # API services & models
 │   │   │   ├── auth/                       # AuthService, AuthGuard
-│   │   │   └── consent/                    # Einwilligungsverwaltung
-│   │   └── shared/                         # Wiederverwendbare Komponenten
+│   │   │   └── consent/                    # Consent management
+│   │   └── shared/                         # Reusable components
 │   └── src/assets/
-│       └── env.template.js                 # Runtime-Umgebungsvariablen
+│       └── env.template.js                 # Runtime environment variables
 │
 └── docs/
-    └── class-diagram.puml          # UML-Klassendiagramm (PlantUML)
+    └── class-diagram.puml          # UML class diagram (PlantUML)
 ```
 
 ---
 
-## 📦 Voraussetzungen
+## 📦 Prerequisites
 
-| Werkzeug | Mindestversion |
-|----------|----------------|
+| Tool | Minimum Version |
+|------|-----------------|
 | **Docker** & **Docker Compose** | 20.10+ / v2 |
-| **Java JDK** *(nur lokale Backend-Entwicklung)* | 17+ |
-| **Node.js** *(nur lokale Frontend-Entwicklung)* | 22+ |
-| **Maven** *(optional, Wrapper enthalten)* | 3.9+ |
+| **Java JDK** *(local backend development only)* | 17+ |
+| **Node.js** *(local frontend development only)* | 22+ |
+| **Maven** *(optional, wrapper included)* | 3.9+ |
 
 ---
 
-## 🚀 Installation & Start
+## 🚀 Installation & Getting Started
 
-### Option 1: Full-Stack mit Docker (empfohlen)
+### Option 1: Full-Stack with Docker (recommended)
 
 ```bash
-# Repository klonen
+# Clone the repository
 git clone <repository-url>
 cd PraxisForm
 
-# Alle Services starten
+# Start all services
 docker compose up --build
 ```
 
@@ -165,24 +164,24 @@ docker compose up --build
 | Backend API | [http://localhost:8080](http://localhost:8080) |
 | MongoDB | `localhost:27017` |
 
-### Option 2: Lokale Entwicklung
+### Option 2: Local Development
 
-**Backend starten:**
+**Start the backend:**
 
 ```bash
 cd praxis
 
-# MongoDB muss lokal laufen oder per Docker:
+# MongoDB must be running locally or via Docker:
 docker compose up mongodb -d
 
-# Spring Boot starten (Windows)
+# Start Spring Boot (Windows)
 mvnw.cmd spring-boot:run
 
-# Spring Boot starten (Linux/macOS)
+# Start Spring Boot (Linux/macOS)
 ./mvnw spring-boot:run
 ```
 
-**Frontend starten:**
+**Start the frontend:**
 
 ```bash
 cd praxis-frontend
@@ -190,87 +189,87 @@ npm install
 npm start
 ```
 
-Das Frontend ist unter [http://localhost:4200](http://localhost:4200) erreichbar.
+The frontend is available at [http://localhost:4200](http://localhost:4200).
 
 ---
 
-## ⚙️ Umgebungsvariablen
+## ⚙️ Environment Variables
 
-| Variable | Beschreibung | Standardwert |
-|----------|-------------|--------------|
-| `MONGODB_URI` | MongoDB-Connection-String | `mongodb://localhost:27017/praxis` |
-| `JWT_SECRET` | Geheimer Schlüssel für JWT-Signierung (min. 32 Zeichen) | `CHANGE_ME_very_long_secret_at_least_32_chars` |
-| `JWT_EXP_MINUTES` | JWT-Token-Gültigkeitsdauer in Minuten | `120` |
-| `ADMIN_DEFAULT_PASSWORD` | Initiales Admin-Passwort (beim ersten Start) | `changeme` |
-| `API_URL` | Backend-API-URL für das Frontend | `https://dev.praxis-form.de` |
+| Variable | Description | Default Value |
+|----------|-------------|---------------|
+| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/praxis` |
+| `JWT_SECRET` | Secret key for JWT signing (min. 32 characters) | `CHANGE_ME_very_long_secret_at_least_32_chars` |
+| `JWT_EXP_MINUTES` | JWT token validity duration in minutes | `120` |
+| `ADMIN_DEFAULT_PASSWORD` | Initial admin password (on first startup) | `changeme` |
+| `API_URL` | Backend API URL for the frontend | `https://dev.praxis-form.de` |
 
-> ⚠️ **Wichtig:** Ändere `JWT_SECRET` und `ADMIN_DEFAULT_PASSWORD` in Produktionsumgebungen unbedingt!
+> ⚠️ **Important:** Make sure to change `JWT_SECRET` and `ADMIN_DEFAULT_PASSWORD` in production environments!
 
 ---
 
-## 🔌 API-Übersicht
+## 🔌 API Overview
 
-### Öffentlich (kein Token erforderlich)
+### Public (no token required)
 
-| Methode | Endpunkt | Beschreibung |
-|---------|----------|-------------|
-| `POST` | `/api/submissions` | Neues Patientenformular einreichen |
-| `POST` | `/api/auth/login` | Admin-Login, gibt JWT zurück |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/submissions` | Submit a new patient form |
+| `POST` | `/api/auth/login` | Admin login, returns JWT |
 
-### Admin (JWT-Token erforderlich)
+### Admin (JWT token required)
 
-| Methode | Endpunkt | Beschreibung |
-|---------|----------|-------------|
-| `GET` | `/api/admin/submissions` | Alle Einreichungen abrufen (optional `?status=NEW`) |
-| `GET` | `/api/admin/submissions/:id` | Einzelne Einreichung abrufen |
-| `PATCH` | `/api/admin/submissions/:id` | Einreichung bearbeiten |
-| `PATCH` | `/api/admin/submissions/:id/status` | Status aktualisieren (`NEW` → `VIEWED` → `DONE`) |
-| `GET` | `/api/admin/submissions/:id/attachments/:fileId` | Dateianhang herunterladen |
-| `GET` | `/api/admin/submissions/stream` | SSE-Stream für Echtzeit-Updates |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/admin/submissions` | Retrieve all submissions (optional `?status=NEW`) |
+| `GET` | `/api/admin/submissions/:id` | Retrieve a single submission |
+| `PATCH` | `/api/admin/submissions/:id` | Edit a submission |
+| `PATCH` | `/api/admin/submissions/:id/status` | Update status (`NEW` → `VIEWED` → `DONE`) |
+| `GET` | `/api/admin/submissions/:id/attachments/:fileId` | Download a file attachment |
+| `GET` | `/api/admin/submissions/stream` | SSE stream for real-time updates |
 
 ---
 
 ## 🧪 Tests
 
-### Backend-Tests
+### Backend Tests
 
 ```bash
 cd praxis
 
-# Alle Tests ausführen
+# Run all tests
 mvnw.cmd test          # Windows
 ./mvnw test            # Linux/macOS
 
-# Coverage-Report generieren (JaCoCo)
-# Report unter: target/site/jacoco/index.html
+# Generate coverage report (JaCoCo)
+# Report available at: target/site/jacoco/index.html
 ```
 
 ---
 
 ## 🌐 Deployment
 
-### Produktion mit Docker Compose
+### Production with Docker Compose
 
 ```bash
-# Umgebungsvariablen setzen
+# Set environment variables
 export CI_REGISTRY_IMAGE=registry.gitlab.com/infra-x-group/<your-project>
-export JWT_SECRET="ein_sicherer_geheimer_schluessel_min_32_zeichen"
-export ADMIN_DEFAULT_PASSWORD="sicheres_admin_passwort"
+export JWT_SECRET="a_secure_secret_key_at_least_32_characters"
+export ADMIN_DEFAULT_PASSWORD="secure_admin_password"
 
-# Produktions-Compose starten
+# Start production compose
 docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### GitLab CI/CD
 
-Das Projekt ist für den Betrieb mit **GitLab Container Registry** vorbereitet. Die Produktions-`docker-compose.prod.yml` zieht vorgefertigte Images aus der Registry:
+The project is designed for use with **GitLab Container Registry**. The production `docker-compose.prod.yml` pulls pre-built images from the registry:
 
 ```yaml
 image: ${CI_REGISTRY_IMAGE}/backend:latest
 image: ${CI_REGISTRY_IMAGE}/frontend:latest
 ```
 
-### Empfohlener Produktions-Stack
+### Recommended Production Stack
 
 ```
 Client → Nginx Reverse Proxy (SSL) → Frontend (:80) → Backend (:8080) → MongoDB (:27017)
@@ -279,6 +278,6 @@ Client → Nginx Reverse Proxy (SSL) → Frontend (:80) → Backend (:8080) → 
 ---
 
 <p align="center">
-  Entwickelt mit ❤️ für die digitale Arztpraxis
+  Built with ❤️ for the digital medical practice
 </p>
 
