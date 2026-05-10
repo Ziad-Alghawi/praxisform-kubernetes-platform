@@ -21,7 +21,6 @@ jobs:
 
   backend-test:
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.modified, 'praxis/') || contains(github.event.head_commit.added, 'praxis/') || github.event_name == 'pull_request'
     services:
       mongodb:
         image: mongo:7.0
@@ -87,7 +86,6 @@ jobs:
 
   frontend-lint:
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.modified, 'praxis-frontend/') || contains(github.event.head_commit.added, 'praxis-frontend/') || github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
