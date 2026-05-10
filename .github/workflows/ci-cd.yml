@@ -176,9 +176,9 @@ jobs:
             ghcr.io/${{ env.REPO_LC }}/frontend:latest
 
   # ============================================
-  # DEPLOY JOB
+  # DEPLOY JOB (manuell)
   # ============================================
-
+  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
   deploy:
     runs-on: ubuntu-latest
     needs: [docker-backend, docker-frontend]
@@ -195,19 +195,13 @@ jobs:
           host: 87.106.50.149
           username: root
           password: ${{ secrets.SSH_PASSWORD }}
+          envs: REPO_LC
           script: |
             set -e
             cd /opt/praxis-form
 
-            # Docker Registry Login
-            echo '${{ secrets.GITHUB_TOKEN }}' | docker login -u '${{ github.actor }}' --password-stdin ghcr.io
-
-            # GHCR Image-Pfade in .env aktualisieren
-            if grep -q 'CI_REGISTRY_IMAGE' .env 2>/dev/null; then
-              sed -i 's|CI_REGISTRY_IMAGE=.*|CI_REGISTRY_IMAGE=${{ env.REPO_LC }}|' .env
-            else
-              echo 'CI_REGISTRY_IMAGE=${{ env.REPO_LC }}' >> .env
-            fi
+            # Docker Registry Login mit PAT
+            echo '${{ secrets.GHCR_PAT }}' | docker login -u '${{ github.actor }}' --password-stdin ghcr.io
 
             # Docker Compose Command ermitteln
             if docker compose version &> /dev/null; then
@@ -215,6 +209,10 @@ jobs:
             else
               echo 'Kein docker compose gefunden!' && exit 1
             fi
+
+            # Image-Referenzen in docker-compose.yml von GitLab auf GHCR umstellen
+            sed -i "s|registry.gitlab.com/[^:]*backend:|ghcr.io/${{ env.REPO_LC }}/backend:|g" docker-compose.yml
+            sed -i "s|registry.gitlab.com/[^:]*frontend:|ghcr.io/${{ env.REPO_LC }}/frontend:|g" docker-compose.yml
 
             # Alte Container stoppen und entfernen
             $DC down --remove-orphans
