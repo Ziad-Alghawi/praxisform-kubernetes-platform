@@ -278,6 +278,6 @@ Client → Nginx Reverse Proxy (SSL) → Frontend (:80) → Backend (:8080) → 
 ---
 
 <p align="center">
-  Built with ❤️ for the digital medical practice
+  Built with ❤️ for the digital medical practice.
 </p>
 
