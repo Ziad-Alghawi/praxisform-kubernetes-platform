@@ -23,6 +23,8 @@ logs/
 *.pem
 *.crt
 
+backend-secrets.yaml
+
 ############################
 # ===== BACKEND (Spring Boot / Maven / Gradle)
 ############################
