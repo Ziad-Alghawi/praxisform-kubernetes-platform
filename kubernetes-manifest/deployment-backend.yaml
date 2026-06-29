@@ -15,19 +15,19 @@ spec:
       labels:
         app: backend
     spec:
-      imagePullSecrets:
+      imagePullSecrets: # to pull the image from GitHub Container Registry
         - name: regcred
       containers:
         - name: backend
-          image: ghcr.io/ziad-alghawi/praxis-backend:v1
+          image: ghcr.io/ziad-alghawi/praxis-backend:v1 # github image
           imagePullPolicy: Always
           env:
-            - name: MONGODB_URI
+            - name: MONGODB_URI # mongodb connection string
               value: mongodb://praxis-form-mongodb.praxis.svc.cluster.local:27017/praxis-ziad
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: backend-secret
+                  name: backend-secret # backend secret name from the other file
                   key: JWT_SECRET
             - name: JWT_EXP_MINUTES
               value: "120"
