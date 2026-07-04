@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: backend
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecrets.name }}
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repo }}:{{ .Values.backend.image.tag }}" # github image
+          imagePullPolicy: Always
+          env:
+            - name: MONGODB_URI # mongodb connection string
+              value: mongodb://praxis-form-mongodb.praxis.svc.cluster.local:27017/praxis-ziad
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret # backend secret name from the other file
+                  key: JWT_SECRET
+            - name: JWT_EXP_MINUTES
+              value: "120"
+            - name: ADMIN_DEFAULT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: ADMIN_DEFAULT_PASSWORD
+          ports:
+            - containerPort: 8080

@@ -1,0 +1,22 @@
+backend:
+  replicas: 2
+  image:
+    repo: ghcr.io/ziad-alghawi/praxis-backend
+    tag: v1
+imagePullSecrets:
+  name: regcred
+
+frontend:
+  replicas: 2
+  apiUrl: https://ziad.praxis-form.de
+  image:
+    repo: ghcr.io/ziad-alghawi/frontend
+    tag: v1
+    
+imagePullSecrets:
+  name: regcred
+
+certificate:
+  name: ziad-praxis-form-tls
+  secretName: ziad-praxis-form-tls
+  dnsName: ziad.praxis-form.de

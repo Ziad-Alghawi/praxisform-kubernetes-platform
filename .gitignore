@@ -22,6 +22,7 @@ logs/
 *.key
 *.pem
 *.crt
+imagePullSecret.yaml
 
 backend-secrets.yaml
 
