@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: grafana-praxis-form-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: grafana-praxis-form-tls
+  dnsNames:
+    - grafana-ziad.praxis-form.de
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: praxis-form-letsencrypt-prod
+  usages:
+    - digital signature
+    - key encipherment
