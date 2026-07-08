@@ -140,7 +140,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.MY_GITHUB_TOKEN }}
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -166,7 +166,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.MY_GITHUB_TOKEN }}
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -185,46 +185,26 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     environment:
       name: production
-      url: https://dev.praxis-form.de
+      url: https://ziad.praxis-form.de
+    env:
+      NAMESPACE: worishop-ziad
     steps:
-      - name: Set lowercase repo name
-        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v1
-        with:
-          host: 87.106.50.149
-          username: root
-          password: ${{ secrets.SSH_PASSWORD }}
-          envs: REPO_LC
-          script: |
-            set -e
-            cd /opt/praxis-form
+      - uses: actions/checkout@v4
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+      - name: configure Kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.MY_KUBECONFIG_BASE64 }}" | 
+          base64 -d > $HOME/.kube/config
+      - name: Deploy with Helm
+        working-directory: ./kubernetes-manifest
+        run: |
+          helm dependency update
+          helm upgrade --install ziad-praxis-from .
+          --create-namespace -n "${{ env.NAMESPACE }}"
 
-            # Docker Registry Login mit PAT
-            echo '${{ secrets.GHCR_PAT }}' | docker login -u '${{ github.actor }}' --password-stdin ghcr.io
 
-            # Docker Compose Command ermitteln
-            if docker compose version &> /dev/null; then
-              DC='docker compose'
-            else
-              echo 'Kein docker compose gefunden!' && exit 1
-            fi
-
-            # Image-Referenzen in docker-compose.yml von GitLab auf GHCR umstellen
-            sed -i "s|registry.gitlab.com/[^:]*backend:|ghcr.io/${{ env.REPO_LC }}/backend:|g" docker-compose.yml
-            sed -i "s|registry.gitlab.com/[^:]*frontend:|ghcr.io/${{ env.REPO_LC }}/frontend:|g" docker-compose.yml
-
-            # Alte Container stoppen und entfernen
-            $DC down --remove-orphans
-
-            # Images pullen
-            $DC pull
-
-            # Container neu starten
-            $DC up -d --force-recreate --remove-orphans
-
-            # Alte Images aufräumen
-            docker image prune -f
-
-            echo 'Deployment abgeschlossen!'
-
+     
