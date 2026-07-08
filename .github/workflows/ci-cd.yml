@@ -200,7 +200,7 @@ jobs:
           echo "${{ secrets.MY_KUBECONFIG_BASE64 }}" | 
           base64 -d > $HOME/.kube/config
       - name: Deploy with Helm
-        working-directory: ./kubernetes-manifest
+        working-directory: ./kubernetes-manifest/my-chart
         run: |
           helm dependency update
           helm upgrade --install ziad-praxis-form .
