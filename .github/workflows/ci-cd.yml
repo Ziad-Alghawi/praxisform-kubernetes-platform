@@ -187,7 +187,7 @@ jobs:
       name: production
       url: https://ziad.praxis-form.de
     env:
-      NAMESPACE: worishop-ziad
+      NAMESPACE: workshop-ziad
     steps:
       - uses: actions/checkout@v4
       - name: Install Helm
@@ -203,7 +203,7 @@ jobs:
         working-directory: ./kubernetes-manifest
         run: |
           helm dependency update
-          helm upgrade --install ziad-praxis-from .
+          helm upgrade --install ziad-praxis-form .
           --create-namespace -n "${{ env.NAMESPACE }}"
 
 
