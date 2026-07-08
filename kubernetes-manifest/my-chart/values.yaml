@@ -22,7 +22,7 @@ certificate:
   dnsName: ziad.praxis-form.de
 
 grafana:
-  enabled: true
+  enabled: false
   ingress:
     enabled: true
     ingressClassName: nginx

@@ -203,8 +203,9 @@ jobs:
         working-directory: ./kubernetes-manifest/my-chart
         run: |
           helm dependency update
-          helm upgrade --install ziad-praxis-form .
-          --create-namespace -n "${{ env.NAMESPACE }}"
+          helm upgrade --install ziad-praxis-form . \
+            --create-namespace \
+            -n "${{ env.NAMESPACE }}"
 
 
      
