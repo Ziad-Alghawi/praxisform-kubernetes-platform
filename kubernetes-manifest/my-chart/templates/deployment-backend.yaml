@@ -23,7 +23,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: MONGODB_URI # mongodb connection string
-              # value: mongodb://praxis-form-mongodb.praxis.svc.cluster.local:27017/praxis-ziad
+              value: mongodb://praxis-form-mongodb.praxis.svc.cluster.local:27017/praxis-ziad
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
