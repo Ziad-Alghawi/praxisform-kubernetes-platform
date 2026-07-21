@@ -30,6 +30,9 @@ backend-secrets.yaml
 kubernetes-manifest/my-chart/charts/
 kubernetes-manifest/my-chart/*.tgz
 
+# ArgoCD SSH keys
+argocd-keys/
+
 ############################
 # ===== BACKEND (Spring Boot / Maven / Gradle)
 ############################
