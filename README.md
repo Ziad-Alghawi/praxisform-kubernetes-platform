@@ -210,7 +210,7 @@ npm run build
 
 The repository also includes a frontend test script via `npm test`, while CI currently emphasizes backend verification, frontend build validation, artifact generation, and container packaging.
 
-## Deployment
+## Deployment>
 
 The repository demonstrates a production-style deployment workflow rather than a local-only setup:
 
