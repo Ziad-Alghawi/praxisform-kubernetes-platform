@@ -1,187 +1,126 @@
-<h1 align="center">PraxisForm</h1>
+# PraxisForm
 
-<p align="center">
-  Digital patient intake for medical practices – paperless, secure, and in real time.
-</p>
+Digital patient intake platform for medical practices. The project combines a Spring Boot API, an Angular frontend, containerized local development, and Kubernetes deployment assets to demonstrate full-stack engineering, cloud delivery, and production-style DevOps practices in one repository.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Spring%20Boot-4.0-6DB33F?logo=springboot&logoColor=white" />
-  <img src="https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white" />
-  <img src="https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb&logoColor=white" />
-  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/Java-17+-ED8B00?logo=openjdk&logoColor=white" />
-</p>
+## Project Overview
 
----
+PraxisForm replaces paper intake forms with a structured digital workflow. Patients can submit their personal details, medical history, symptoms, attachments, and signature online, while practice staff review incoming submissions through an authenticated admin dashboard with live updates.
 
-## 📋 Table of Contents
+The project was developed as part of a hands-on Kubernetes and DevOps workshop and is presented here as a practical case study in application development and cloud-native delivery. It combines product functionality with the operational work needed to package, test, ship, and deploy a modern web application.
 
-- [About the Project](#-about-the-project)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Prerequisites](#-prerequisites)
-- [Installation & Getting Started](#-installation--getting-started)
-- [Environment Variables](#-environment-variables)
-- [API Overview](#-api-overview)
-- [Tests](#-tests)
-- [Deployment](#-deployment)
+### Technical Highlights
 
----
+- Full-stack development across backend, frontend, persistence, and authentication
+- Containerization for consistent local and deployment environments
+- Kubernetes application deployment using reusable Helm-based packaging
+- Infrastructure as Code through manifests, chart values, and declarative deployment assets
+- GitOps-oriented deployment using Argo CD application definitions
+- Continuous Integration and Continuous Deployment with automated build, test, and image publishing workflows
+- Cloud-native application delivery on managed Kubernetes infrastructure
+- A production-style workflow from source control to container registry to cluster deployment
 
-## 🩺 About the Project
+## Features
 
-**PraxisForm** replaces the traditional paper-based medical history form in doctor's offices with a fully digital system. Patients fill out a multi-step online form – including personal data, medical history, symptom assessment, file attachments, and a digital signature. Practice staff can view incoming submissions in real time on an admin dashboard, and can edit, filter, and mark them as completed.
+- Multi-step patient intake form with validation
+- File upload support backed by MongoDB GridFS
+- Digital signature capture in the browser
+- JWT-based admin authentication
+- Admin dashboard for reviewing and updating submissions
+- Server-Sent Events for real-time submission updates
+- Docker-based local development
+- Kubernetes and ArgoCD deployment manifests
 
----
+## Tech Stack
 
-## ✨ Features
+| Layer    | Technologies                                                                   |
+| -------- | ------------------------------------------------------------------------------ |
+| Backend  | Java 17, Spring Boot 4, Spring Security, Spring Data MongoDB, JJWT, Maven      |
+| Frontend | Angular 21, TypeScript, Angular Material, RxJS, Nginx                          |
+| Data     | MongoDB, GridFS                                                                |
+| DevOps   | Docker, Docker Compose, Kubernetes, Helm, Argo CD, GitHub Actions, GHCR, NGINX |
 
-| Area | Functionality |
-|------|---------------|
-| **Patient Form** | Multi-step stepper with validation (Personal Data → Medical History → Symptoms → Consent → Signature) |
-| **File Upload** | Up to 5 files (PDF, JPEG, PNG, WebP), max. 10 MB per file, stored via MongoDB GridFS |
-| **Digital Signature** | Touch-/mouse-based signature capture directly in the browser |
-| **Admin Dashboard** | Tabular overview of all submissions with filtering, search, and pagination |
-| **Real-Time Updates** | Server-Sent Events (SSE) for live notifications on new submissions |
-| **Status Workflow** | Three-stage workflow: `NEW` → `VIEWED` → `DONE` |
-| **Detail View** | Full view & editing of individual submissions incl. file download |
-| **Authentication** | JWT-based admin authentication with automatic admin seeding |
-| **Responsive UI** | Angular Material Design – optimized for desktop, tablet, and mobile devices |
+## Architecture
 
----
+```mermaid
+flowchart LR
+    User[Patient or Practice Staff] --> Frontend[Angular SPA]
+    Frontend --> Nginx[NGINX]
+    Nginx --> Backend[Spring Boot REST API]
+    Backend --> Mongo[(MongoDB / GridFS)]
+    Backend --> SSE[Server-Sent Events]
 
-## 🛠 Tech Stack
-
-### Backend
-| Technology | Version | Usage |
-|------------|---------|-------|
-| **Java** | 17+ | Programming language |
-| **Spring Boot** | 4.0 | REST API framework |
-| **Spring Security** | – | Authentication & authorization |
-| **Spring Data MongoDB** | – | Database access & GridFS |
-| **JJWT** | 0.12.5 | JWT token generation & validation |
-| **Lombok** | – | Boilerplate reduction |
-| **JaCoCo** | 0.8.12 | Code coverage reports |
-| **Maven** | 3.9+ | Build tool |
-
-### Frontend
-| Technology | Version | Usage |
-|------------|---------|-------|
-| **Angular** | 21 | SPA framework |
-| **Angular Material** | 21 | UI component library |
-| **TypeScript** | 5.9 | Programming language |
-| **RxJS** | 7.8 | Reactive programming |
-| **Vitest** | 4.0 | Unit testing |
-| **Nginx** | alpine | Production web server |
-
-### Infrastructure
-| Technology | Usage |
-|------------|-------|
-| **MongoDB** | Document database & GridFS for file uploads |
-| **Docker / Docker Compose** | Containerization & orchestration |
-| **GitLab CI/CD** | Automated builds & deployments |
-
----
-
-## 📁 Project Structure
-
-```
-PraxisForm/
-├── docker-compose.yml              # Local development environment
-├── docker-compose.prod.yml         # Production configuration
-│
-├── praxis/                         # 🔧 Spring Boot Backend
-│   ├── Dockerfile
-│   ├── pom.xml
-│   ├── src/main/java/.../praxis/
-│   │   ├── PraxisApplication.java          # Entry point
-│   │   ├── controllers/
-│   │   │   ├── AuthController.java         # POST /api/auth/login
-│   │   │   ├── PublicSubmissionController   # POST /api/submissions
-│   │   │   ├── AdminSubmissionController    # CRUD /api/admin/submissions
-│   │   │   └── AdminSubmissionsStreamCtrl   # GET  /api/admin/submissions/stream (SSE)
-│   │   ├── modules/
-│   │   │   ├── patient/                    # Submission, PatientData, MedicalData, ...
-│   │   │   ├── admin/                      # Admin, JwtService, SecurityConfig, SseHub
-│   │   │   └── form/                       # FormDefinition (JSON Schema)
-│   │   ├── DTOs/                           # Request/Response objects
-│   │   └── repos/                          # Spring Data Repositories
-│   └── src/test/                           # Unit & integration tests
-│
-├── praxis-frontend/                # 🎨 Angular Frontend
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   ├── package.json
-│   ├── src/app/
-│   │   ├── features/
-│   │   │   ├── patient-form/               # Patient form (stepper)
-│   │   │   ├── admin/                      # Admin dashboard with SSE
-│   │   │   ├── submission-details/         # Submission detail view
-│   │   │   ├── login/                      # Admin login
-│   │   │   └── submission-success/         # Success page after submission
-│   │   ├── core/
-│   │   │   ├── api/                        # API services & models
-│   │   │   ├── auth/                       # AuthService, AuthGuard
-│   │   │   └── consent/                    # Consent management
-│   │   └── shared/                         # Reusable components
-│   └── src/assets/
-│       └── env.template.js                 # Runtime environment variables
-│
-└── docs/
-    └── class-diagram.puml          # UML class diagram (PlantUML)
+    GitHub[GitHub Repository] --> Actions[GitHub Actions CI/CD]
+    Actions --> Registry[Container Registry]
+    Registry --> K8s[OVHcloud Managed Kubernetes]
+    Helm[Helm Chart] --> K8s
+    Argo[Argo CD] --> K8s
 ```
 
----
+The runtime architecture separates the user-facing SPA, backend API, and persistent document storage. The delivery architecture adds container builds, registry publishing, Kubernetes deployment, and GitOps-style reconciliation.
 
-## 📦 Prerequisites
+## Project Structure
 
-| Tool | Minimum Version |
-|------|-----------------|
-| **Docker** & **Docker Compose** | 20.10+ / v2 |
-| **Java JDK** *(local backend development only)* | 17+ |
-| **Node.js** *(local frontend development only)* | 22+ |
-| **Maven** *(optional, wrapper included)* | 3.9+ |
+```text
+praxis/                      Spring Boot backend service
+praxis-frontend/             Angular frontend application
+kubernetes-manifest/my-chart/ Helm chart and Kubernetes deployment assets
+argocd/                      Argo CD application definition
+.github/workflows/           CI/CD automation
+docker-compose.yml           Local full-stack environment
+docker-compose.prod.yml      Production-oriented container deployment
+```
 
----
+Key repository areas:
 
-## 🚀 Installation & Getting Started
+- `praxis/`: backend service
+- `praxis-frontend/`: frontend application
+- `kubernetes-manifest/my-chart/`: Helm chart used by the GitHub Actions deploy job
+- `argocd/app.yaml`: ArgoCD application definition
+- `.github/workflows/`: CI/CD automation for test, build, packaging, and deployment
+- `docker-compose.yml`: local full-stack environment
 
-### Option 1: Full-Stack with Docker (recommended)
+## Installation
+
+### Prerequisites
+
+- Docker and Docker Compose v2
+- Java 17+ for backend-only local development
+- Node.js 22+ for frontend-only local development
+
+### Run With Docker
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd PraxisForm
-
-# Start all services
+git clone <your-repository-url>
+cd infra_x_projekt
 docker compose up --build
 ```
 
-| Service | URL |
-|---------|-----|
-| Frontend | [http://localhost:4200](http://localhost:4200) |
-| Backend API | [http://localhost:8080](http://localhost:8080) |
-| MongoDB | `localhost:27017` |
+Services:
 
-### Option 2: Local Development
+- Frontend: http://localhost:4200
+- Backend: http://localhost:8080
+- MongoDB: mongodb://localhost:27017/praxis
 
-**Start the backend:**
+### Run Locally Without Full Docker
+
+Start MongoDB from the repository root:
+
+```bash
+docker compose up -d mongodb
+```
+
+Start the backend:
 
 ```bash
 cd praxis
-
-# MongoDB must be running locally or via Docker:
-docker compose up mongodb -d
-
-# Start Spring Boot (Windows)
+# Windows
 mvnw.cmd spring-boot:run
 
-# Start Spring Boot (Linux/macOS)
+# Linux/macOS
 ./mvnw spring-boot:run
 ```
 
-**Start the frontend:**
+Start the frontend in a second terminal:
 
 ```bash
 cd praxis-frontend
@@ -189,95 +128,110 @@ npm install
 npm start
 ```
 
-The frontend is available at [http://localhost:4200](http://localhost:4200).
+## Usage
 
----
+1. Open the patient-facing frontend at `http://localhost:4200`.
+2. Submit a form with personal data, medical details, attachments, and signature.
+3. Log in through the admin flow to review incoming submissions.
+4. Track status changes and live updates in the admin dashboard.
 
-## ⚙️ Environment Variables
+## DevOps & Cloud
 
-| Variable | Description | Default Value |
-|----------|-------------|---------------|
-| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/praxis` |
-| `JWT_SECRET` | Secret key for JWT signing (min. 32 characters) | `CHANGE_ME_very_long_secret_at_least_32_chars` |
-| `JWT_EXP_MINUTES` | JWT token validity duration in minutes | `120` |
-| `ADMIN_DEFAULT_PASSWORD` | Initial admin password (on first startup) | `changeme` |
-| `API_URL` | Backend API URL for the frontend | `https://dev.praxis-form.de` |
+This repository is not only a web application; it also demonstrates how the application is packaged, delivered, and operated in a cloud-native environment.
 
-> ⚠️ **Important:** Make sure to change `JWT_SECRET` and `ADMIN_DEFAULT_PASSWORD` in production environments!
+| Technology                                | How it was used in this project                                                                                                                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Docker and Docker Compose                 | The backend, frontend, and MongoDB services are containerized and can be started together locally through Docker Compose for reproducible development and integration testing.           |
+| Kubernetes                                | The application was prepared for cluster deployment using Kubernetes resources for deployments, services, ingress, TLS-related assets, and secrets handling.                             |
+| Helm Charts                               | The Kubernetes deployment is packaged as a Helm chart so image tags, replica counts, ingress settings, and environment values can be configured per environment.                         |
+| Argo CD                                   | An Argo CD application definition is included to demonstrate pull-based synchronization of cluster state from Git-managed deployment configuration.                                      |
+| GitOps workflow                           | Deployment configuration is expressed declaratively in version-controlled manifests and chart values, enabling auditable, repeatable changes rather than manual cluster edits.           |
+| GitHub Actions / CI/CD                    | The workflow runs backend verification, frontend build steps, container image builds, and deployment automation from the repository pipeline.                                            |
+| NGINX                                     | NGINX serves the Angular production build inside the frontend container and is also reflected in ingress-based routing for Kubernetes delivery.                                          |
+| MongoDB                                   | MongoDB stores application data, while GridFS handles uploaded attachments from patient submissions.                                                                                     |
+| Container Registry                        | CI publishes versioned backend and frontend container images to a registry so Kubernetes deployments consume immutable build artifacts instead of local images.                          |
+| Kubernetes manifests                      | The repository includes raw deployment assets and templated chart files, showing both direct Kubernetes modeling and reusable packaging.                                                 |
+| OVHcloud Managed Kubernetes (CaaS)        | The workshop deployment target was a managed Kubernetes environment, demonstrating how the application can be delivered on hosted cloud infrastructure rather than a local-only cluster. |
+| Cloud deployment and application delivery | The overall flow covers code, build, packaging, image publishing, cluster rollout, and externally reachable delivery through ingress-based routing.                                      |
 
----
+## Environment Variables
 
-## 🔌 API Overview
+| Variable                 | Purpose                                   | Default                                    |
+| ------------------------ | ----------------------------------------- | ------------------------------------------ |
+| `MONGODB_URI`            | Backend MongoDB connection string         | `mongodb://localhost:27017/praxis`         |
+| `JWT_SECRET`             | JWT signing secret used by the backend    | Set via environment for shared deployments |
+| `JWT_EXP_MINUTES`        | Access token lifetime in minutes          | `120`                                      |
+| `ADMIN_DEFAULT_PASSWORD` | Seeded admin password for first startup   | Set via environment for shared deployments |
+| `API_URL`                | Frontend API base URL injected at runtime | `http://localhost:8080`                    |
 
-### Public (no token required)
+For any public or shared deployment, provide `JWT_SECRET` and `ADMIN_DEFAULT_PASSWORD` through environment variables or secret management. Do not rely on development fallbacks.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/submissions` | Submit a new patient form |
-| `POST` | `/api/auth/login` | Admin login, returns JWT |
+## API Overview
 
-### Admin (JWT token required)
+### Public Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/admin/submissions` | Retrieve all submissions (optional `?status=NEW`) |
-| `GET` | `/api/admin/submissions/:id` | Retrieve a single submission |
-| `PATCH` | `/api/admin/submissions/:id` | Edit a submission |
-| `PATCH` | `/api/admin/submissions/:id/status` | Update status (`NEW` → `VIEWED` → `DONE`) |
-| `GET` | `/api/admin/submissions/:id/attachments/:fileId` | Download a file attachment |
-| `GET` | `/api/admin/submissions/stream` | SSE stream for real-time updates |
+| Method | Endpoint           | Purpose                                     |
+| ------ | ------------------ | ------------------------------------------- |
+| `POST` | `/api/submissions` | Submit a new patient intake form            |
+| `POST` | `/api/auth/login`  | Authenticate an admin user and return a JWT |
 
----
+### Admin Endpoints
 
-## 🧪 Tests
+| Method  | Endpoint                                           | Purpose                                           |
+| ------- | -------------------------------------------------- | ------------------------------------------------- |
+| `GET`   | `/api/admin/submissions`                           | List submissions, optionally filtered by status   |
+| `GET`   | `/api/admin/submissions/{id}`                      | Retrieve a single submission                      |
+| `PATCH` | `/api/admin/submissions/{id}`                      | Update editable submission data                   |
+| `PATCH` | `/api/admin/submissions/{id}/status`               | Move a submission through the status workflow     |
+| `GET`   | `/api/admin/submissions/{id}/attachments/{fileId}` | Download an uploaded file                         |
+| `GET`   | `/api/admin/submissions/stream`                    | Subscribe to real-time submission updates via SSE |
 
-### Backend Tests
+## Testing
+
+Backend tests and coverage are part of the Maven workflow:
 
 ```bash
 cd praxis
 
-# Run all tests
-mvnw.cmd test          # Windows
-./mvnw test            # Linux/macOS
+# Windows
+mvnw.cmd verify
 
-# Generate coverage report (JaCoCo)
-# Report available at: target/site/jacoco/index.html
+# Linux/macOS
+./mvnw verify
 ```
 
----
-
-## 🌐 Deployment
-
-### Production with Docker Compose
+Frontend validation is driven through the Angular toolchain:
 
 ```bash
-# Set environment variables
-export CI_REGISTRY_IMAGE=registry.gitlab.com/infra-x-group/<your-project>
-export JWT_SECRET="a_secure_secret_key_at_least_32_characters"
-export ADMIN_DEFAULT_PASSWORD="secure_admin_password"
-
-# Start production compose
-docker compose -f docker-compose.prod.yml up -d
+cd praxis-frontend
+npm install
+npm run build
 ```
 
-### GitLab CI/CD
+The repository also includes a frontend test script via `npm test`, while CI currently emphasizes backend verification, frontend build validation, artifact generation, and container packaging.
 
-The project is designed for use with **GitLab Container Registry**. The production `docker-compose.prod.yml` pulls pre-built images from the registry:
+## Deployment
 
-```yaml
-image: ${CI_REGISTRY_IMAGE}/backend:latest
-image: ${CI_REGISTRY_IMAGE}/frontend:latest
-```
+The repository demonstrates a production-style deployment workflow rather than a local-only setup:
 
-### Recommended Production Stack
+- Docker Compose provides a fast full-stack local environment for development and verification.
+- GitHub Actions runs CI tasks, builds container images, and publishes deployable artifacts.
+- The Helm chart in `kubernetes-manifest/my-chart/` packages the Kubernetes deployment.
+- Argo CD provides a GitOps-compatible application definition for cluster synchronization.
+- Container images are pushed to a registry and then consumed by Kubernetes deployments.
+- The deployment model aligns with managed Kubernetes delivery on OVHcloud CaaS.
 
-```
-Client → Nginx Reverse Proxy (SSL) → Frontend (:80) → Backend (:8080) → MongoDB (:27017)
-```
+Typical delivery flow:
 
----
+1. Commit application or infrastructure changes to Git.
+2. Run CI to validate the backend and frontend.
+3. Build and publish container images.
+4. Deploy through Helm-based Kubernetes configuration.
+5. Reconcile the desired state in-cluster through Argo CD or pipeline-driven rollout.
 
-<p align="center">
-  Built with ❤️ for the digital medical practice.
-</p>
+## Future Improvements
 
+- Consolidate overlapping deployment assets into one clearly documented primary Kubernetes path
+- Add an OpenAPI or Postman artifact for easier backend evaluation
+- Extend automated frontend test coverage beyond build validation
+- Add environment example files and deployment profiles for smoother onboarding
