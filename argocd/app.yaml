@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: "git@github.com:Ziad-Alghawi/kubernetes-devops-platform.git"
+    repoURL: "git@github.com:Ziad-Alghawi/praxisform-kubernetes-platform.git"
     targetRevision: main
     path: kubernetes-manifest/my-chart
     helm:
