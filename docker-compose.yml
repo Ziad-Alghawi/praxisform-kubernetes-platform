@@ -1,11 +1,12 @@
-version: "3.9"
+# Local demo stack: docker compose up
+# The fallback values below are fake and for local use only (see .env.example).
 
 services:
   mongodb:
     image: mongo:7.0.28
     container_name: praxis-mongodb
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017" # no auth, so keep it off the network
     environment:
       MONGO_INITDB_DATABASE: praxis
     volumes:
@@ -24,6 +25,16 @@ services:
       timeout: 5s
       retries: 10
 
+  seed:
+    image: mongo:7.0.28
+    container_name: praxis-seed
+    command: ["mongosh", "--quiet", "mongodb://mongodb:27017/praxis", "/seed/demo-seed.js"]
+    volumes:
+      - ./scripts/seed:/seed:ro
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
   backend:
     build:
       context: ./praxis
@@ -33,9 +44,9 @@ services:
       - "8080:8080"
     environment:
       MONGODB_URI: mongodb://mongodb:27017/praxis
-      JWT_SECRET: ${JWT_SECRET:-CHANGE_ME_very_long_secret_at_least_32_chars}
-      JWT_EXP_MINUTES: "120"
-      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-CHANGE_ME}
+      JWT_SECRET: ${JWT_SECRET:-demo-only-jwt-secret-not-for-production-use}
+      JWT_EXP_MINUTES: ${JWT_EXP_MINUTES:-120}
+      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-demo-only-not-a-real-password}
     depends_on:
       mongodb:
         condition: service_healthy
