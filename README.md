@@ -101,7 +101,7 @@ The demo data comes from [`scripts/seed/demo-seed.js`](scripts/seed/demo-seed.js
 3. The cluster pulls images from GHCR, using a registry secret stored as a Sealed Secret.
 4. NGINX Ingress routes `/` to the frontend and `/api` to the backend, with TLS certificates from cert-manager.
 
-The image versions are set in `values.yaml`, and CI does not update them, so a new release means changing that file in Git. The pipeline also has a manual `workflow_dispatch` deploy job that runs `helm upgrade --install`.
+The image versions are set in `values.yaml`, and CI does not update them, so a new release means changing that file in Git.
 
 Application secrets are committed only as Sealed Secrets, which only the cluster can decrypt. MongoDB ran as a separate in-cluster service and is not part of this chart.
 
