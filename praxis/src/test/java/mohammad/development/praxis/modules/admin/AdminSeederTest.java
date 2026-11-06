@@ -8,6 +8,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,6 +28,7 @@ class AdminSeederTest {
     @BeforeEach
     void setUp() {
         adminSeeder = new AdminSeeder(adminRepository, passwordEncoder);
+        ReflectionTestUtils.setField(adminSeeder, "adminDefaultPassword", "test-password");
     }
 
     @Test
@@ -44,6 +46,16 @@ class AdminSeederTest {
         assertEquals("encoded-password", savedAdmin.getPasswordHash());
         assertTrue(savedAdmin.getRoles().contains("ADMIN"));
         assertTrue(savedAdmin.isEnabled());
+    }
+
+    @Test
+    void run_blankPassword_doesNotCreateAdmin() throws Exception {
+        ReflectionTestUtils.setField(adminSeeder, "adminDefaultPassword", "");
+        when(adminRepository.count()).thenReturn(0L);
+
+        adminSeeder.run();
+
+        verify(adminRepository, never()).save(any(Admin.class));
     }
 
     @Test

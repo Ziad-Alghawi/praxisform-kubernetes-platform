@@ -32,9 +32,9 @@ services:
       - "127.0.0.1:8080:8080"  # Nur lokal, nginx leitet weiter
     environment:
       MONGODB_URI: mongodb://mongodb:27017/praxis
-      JWT_SECRET: ${JWT_SECRET:-CHANGE_ME_very_long_secret_at_least_32_chars}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
       JWT_EXP_MINUTES: ${JWT_EXP_MINUTES:-120}
-      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-CHANGE_ME}
+      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:?ADMIN_DEFAULT_PASSWORD must be set}
     depends_on:
       mongodb:
         condition: service_healthy

@@ -23,6 +23,11 @@ public class AdminSeeder implements CommandLineRunner {
     public void run(String... args) {
         if (adminRepository.count() > 0) return;
 
+        if (adminDefaultPassword == null || adminDefaultPassword.isBlank()) {
+            System.out.println("⚠️ ADMIN_DEFAULT_PASSWORD is not set, skipping initial admin user");
+            return;
+        }
+
         Admin admin = new Admin();
         admin.setUsername("admin");
         admin.setPasswordHash(passwordEncoder.encode(adminDefaultPassword));
@@ -30,6 +35,6 @@ public class AdminSeeder implements CommandLineRunner {
         admin.setEnabled(true);
 
         adminRepository.save(admin);
-        System.out.println("✅ Seeded initial admin user: admin / admin");
+        System.out.println("✅ Seeded initial admin user: admin");
     }
 }
