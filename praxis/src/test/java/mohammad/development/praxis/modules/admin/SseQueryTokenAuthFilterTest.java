@@ -127,16 +127,13 @@ class SseQueryTokenAuthFilterTest {
         String token = "invalid-token";
 
         when(request.getParameter("access_token")).thenReturn(token);
-        when(jwtService.extractUsername(token)).thenReturn("admin");
-        when(userDetailsService.loadUserByUsername("admin")).thenReturn(
-                User.builder().username("admin").password("pass").roles("ADMIN").build()
-        );
         when(jwtService.isValid(token)).thenReturn(false);
 
         filter.doFilterInternal(request, response, filterChain);
 
         verify(filterChain).doFilter(request, response);
         assertNull(SecurityContextHolder.getContext().getAuthentication());
+        verify(jwtService, never()).extractUsername(anyString());
     }
 
     @Test
@@ -165,6 +162,7 @@ class SseQueryTokenAuthFilterTest {
         String token = "token-with-null-username";
 
         when(request.getParameter("access_token")).thenReturn(token);
+        when(jwtService.isValid(token)).thenReturn(true);
         when(jwtService.extractUsername(token)).thenReturn(null);
 
         filter.doFilterInternal(request, response, filterChain);

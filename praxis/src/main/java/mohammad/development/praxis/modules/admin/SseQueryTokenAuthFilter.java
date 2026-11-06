@@ -46,15 +46,18 @@ public class SseQueryTokenAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        if (!jwtService.isValid(token)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String username = jwtService.extractUsername(token); // <--- deine Methode
         if (username != null) {
             UserDetails user = userDetailsService.loadUserByUsername(username);
-            if (jwtService.isValid(token)) {
-                var auth = new UsernamePasswordAuthenticationToken(
-                        user, null, user.getAuthorities()
-                );
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
+            var auth = new UsernamePasswordAuthenticationToken(
+                    user, null, user.getAuthorities()
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
         filterChain.doFilter(request, response);
