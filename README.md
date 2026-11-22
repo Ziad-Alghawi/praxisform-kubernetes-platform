@@ -4,6 +4,10 @@ Digital patient intake for medical practices: patients fill in a form online, an
 
 > **Team project** from the Infra X workshop (06/2026 – 09/2026). The live cluster was part of the workshop and isn't running anymore, so the app can be tried with the [local demo](#run-locally). It is a learning project and is not hardened for real patient data.
 
+## My part
+
+In the team I worked on the delivery: I deployed the Spring Boot, Angular and MongoDB app to OVHcloud Managed Kubernetes with the Helm chart in [`kubernetes-manifest/my-chart`](kubernetes-manifest/my-chart), set up the CI/CD pipeline in GitHub Actions (backend tests, frontend lint and build, images pushed to GHCR) and the GitOps delivery through Argo CD ([`argocd/app.yaml`](argocd/app.yaml)), with Sealed Secrets and cert-manager for secrets and TLS.
+
 | Admin dashboard | Patient form |
 | --- | --- |
 | ![Admin dashboard listing fictional patient submissions](docs/screenshots/dashboard.png) | ![Patient form with document upload, consents and signature](docs/screenshots/form.png) |
