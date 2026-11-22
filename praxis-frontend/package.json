@@ -43,5 +43,20 @@
     "jsdom": "^27.1.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
+  },
+  "overrides": {
+    "@angular/cli": {
+      "glob": "^14.0.6",
+      "minimatch": "^11.0.9"
+    },
+    "cacache": {
+      "glob": "^14.0.6"
+    },
+    "@tufjs/models": {
+      "minimatch": "^11.0.9"
+    },
+    "ignore-walk": {
+      "minimatch": "^11.0.9"
+    }
   }
 }
