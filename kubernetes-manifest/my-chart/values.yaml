@@ -1,8 +1,9 @@
 backend:
   replicas: 2
   image:
-    repo: ghcr.io/ziad-alghawi/praxis-backend
-    tag: v1
+    # The images CI pushes to GHCR, tagged with the commit they were built from
+    repo: ghcr.io/ziad-alghawi/praxisform-kubernetes-platform/backend
+    tag: 910aa4c155d98a9f74c45fc6fc2bc3a61fc092c0
 imagePullSecrets:
   name: regcred
 
@@ -10,8 +11,8 @@ frontend:
   replicas: 2
   apiUrl: https://ziad.praxis-form.de
   image:
-    repo: ghcr.io/ziad-alghawi/frontend
-    tag: v1
+    repo: ghcr.io/ziad-alghawi/praxisform-kubernetes-platform/frontend
+    tag: 910aa4c155d98a9f74c45fc6fc2bc3a61fc092c0
     
 imagePullSecrets:
   name: regcred
